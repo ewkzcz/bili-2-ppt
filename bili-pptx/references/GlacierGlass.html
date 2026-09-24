@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glacier Glass · vLLM 学术演示 UI 主题方案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#142440; --body:#43526B; --muted:#5F6E87; --line:rgba(80,110,170,.16);
+  --blue-900:#2A4FB8; --blue-700:#2F66EE; --blue-500:#4F86F7; --blue-400:#78A0FF; --blue-300:#8CBEFF; --blue-100:#DCE8FF;
+  --cyan:#6ED2EB; --mint:#78D7B4; --lemon:#FFDC82; --violet:#B9A5FA; --coral:#F27C7C;
+  --bg:#F5F8FD; --r-lg:28px; --r-md:20px;
+  --grad-title:linear-gradient(100deg,#2F66EE 0%,#4F8DFA 50%,#35B3DA 100%);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:#3F6FE0;text-decoration:none}a:hover{color:#2B55C0}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+.sora{font-family:'Sora','Noto Sans SC',sans-serif}
+.grad{background:var(--grad-title);-webkit-background-clip:text;background-clip:text;color:transparent}
+.orb{position:absolute;border-radius:50%;filter:blur(40px);pointer-events:none}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(60,90,160,.13) 1.2px,transparent 1.6px);background-size:30px 30px;-webkit-mask-image:radial-gradient(ellipse at 70% 30%,#000 0%,transparent 70%);mask-image:radial-gradient(ellipse at 70% 30%,#000 0%,transparent 70%);pointer-events:none}
+.glass{background:linear-gradient(140deg,rgba(255,255,255,.78),rgba(255,255,255,.46));-webkit-backdrop-filter:blur(26px) saturate(160%);backdrop-filter:blur(26px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 24px 60px -28px rgba(40,70,150,.28),0 2px 8px -2px rgba(40,70,150,.06);border-radius:28px}
+.glass-soft{background:rgba(255,255,255,.5);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.8);border-radius:20px}
+
+/* page atmosphere */
+.atmo{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)}
+.atmo .orb{filter:blur(70px)}
+main,header.top,footer{position:relative;z-index:1}
+
+/* nav */
+header.top{position:sticky;top:0;z-index:20;padding:14px 16px}
+.nav{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:10px 14px 10px 12px;border-radius:999px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;white-space:nowrap}
+.logo{width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55);flex-shrink:0}
+.nav nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav nav a{font-size:14px;color:var(--body);padding:8px 12px;border-radius:999px;white-space:nowrap}
+.nav nav a:hover{background:rgba(120,160,255,.14);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;font:inherit;font-size:14px;font-weight:600;color:#fff;padding:10px 18px;border-radius:999px;background:linear-gradient(120deg,#2F66EE,#4F8DFA);box-shadow:0 10px 24px -10px rgba(47,102,238,.7);white-space:nowrap;min-height:40px}
+.btn:hover{filter:brightness(1.06)}
+.btn.ghost{background:rgba(255,255,255,.7);color:var(--ink);box-shadow:none;border:1px solid rgba(80,110,170,.18)}
+
+main{max-width:1240px;margin:0 auto;padding:0 16px 80px}
+section{padding:72px 0 8px;scroll-margin-top:80px}
+.kicker{display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.22em;color:#3F6FE0;font-weight:500;text-transform:uppercase}
+.kicker::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 5px rgba(242,124,124,.18);flex-shrink:0}
+h2.sec{margin:14px 0 10px;font-size:clamp(28px,3.4vw,42px);line-height:1.2;letter-spacing:-.01em}
+p.lead{margin:0 0 32px;font-size:17px;color:var(--body);max-width:760px;text-wrap:pretty}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{padding:26px}
+.card h3{margin:0 0 8px;font-size:19px}
+.card p{margin:0;color:var(--body);font-size:15px}
+.label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+code,.code{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+pre.code{margin:14px 0 0;padding:14px 16px;border-radius:14px;background:rgba(236,242,255,.85);border:1px solid rgba(120,160,255,.22);color:#1E2F52;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+
+/* hero */
+.hero{position:relative;padding:72px 0 24px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:40px;align-items:center}
+.hero h1{margin:18px 0 18px;font-size:clamp(40px,6vw,76px);line-height:1.08;font-weight:900;letter-spacing:-.01em}
+.hero h1 .en{display:block;font-family:'Sora',sans-serif;font-weight:800;letter-spacing:-.03em}
+.hero p{font-size:18px;color:var(--body);max-width:620px;margin:0 0 26px}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{padding:7px 15px;border-radius:999px;font-size:14px;font-weight:500;color:#26375A;background:rgba(120,160,255,.16);border:1px solid rgba(120,160,255,.35)}
+.chip.c{background:rgba(110,210,235,.16);border-color:rgba(110,210,235,.4)}
+.chip.m{background:rgba(120,215,180,.16);border-color:rgba(120,215,180,.4)}
+.chip.y{background:rgba(255,220,130,.2);border-color:rgba(255,220,130,.5)}
+.chip.v{background:rgba(185,165,250,.16);border-color:rgba(185,165,250,.4)}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;padding:8px 0}
+.meta div{padding:18px 24px;border-bottom:1px solid var(--line)}
+.meta div:nth-child(odd){border-right:1px solid var(--line)}
+.meta div:nth-last-child(-n+2){border-bottom:0}
+.meta b{display:block;font-family:'Sora',sans-serif;font-size:26px;color:var(--ink)}
+.hero-slide{border-radius:18px;overflow:hidden;box-shadow:0 30px 70px -30px rgba(40,70,150,.45);border:1px solid rgba(255,255,255,.9);cursor:zoom-in}
+
+/* colors */
+.sw{border-radius:20px;overflow:hidden;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);box-shadow:0 14px 34px -22px rgba(40,70,150,.3)}
+.sw .chipc{height:96px}
+.sw .inf{padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.sw .inf b{font-size:14px}
+.sw .inf span{font-size:12px;color:var(--muted)}
+.ratio{display:flex;height:56px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.9);box-shadow:0 14px 34px -22px rgba(40,70,150,.3)}
+.ratio div{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#142440}
+.subh{margin:36px 0 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:10px}
+.subh span{font-weight:400;color:var(--muted);font-size:13px}
+
+/* type */
+.type-row{display:grid;grid-template-columns:150px minmax(0,1fr) 190px;gap:20px;align-items:center;padding:18px 24px;border-bottom:1px solid var(--line)}
+.type-row:last-child{border-bottom:0}
+.type-row .spec{font-size:12.5px;color:var(--muted);text-align:right;font-family:'JetBrains Mono',monospace;line-height:1.7}
+.sample{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* effects demos */
+.stage{position:relative;height:210px;border-radius:22px;overflow:hidden;background:linear-gradient(160deg,#F8FBFF,#EEF4FE);display:flex;align-items:center;justify-content:center}
+.fx .card{padding:0;overflow:hidden}
+.fx .body{padding:20px 22px 22px}
+
+/* components */
+.comp-stage{padding:26px;border-radius:22px;background:linear-gradient(160deg,rgba(248,251,255,.8),rgba(238,244,254,.8));position:relative;overflow:hidden;display:flex;flex-direction:column;gap:16px;min-height:170px;justify-content:center}
+
+/* slides */
+.scaler{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#EEF3FB}
+.scaler .inner{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.thumb{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 44px -26px rgba(40,70,150,.45);cursor:zoom-in;transition:transform .25s ease, box-shadow .25s ease;background:#fff;display:block;width:100%;padding:0;text-align:left;font:inherit;color:inherit}
+.thumb:hover{transform:translateY(-3px);box-shadow:0 28px 56px -26px rgba(40,70,150,.55)}
+.thumb:focus-visible{outline:3px solid #4F86F7;outline-offset:3px}
+.thumb .cap{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-size:14px;font-weight:600;background:rgba(255,255,255,.85)}
+.thumb .cap span{font-family:'Sora',sans-serif;color:var(--muted);font-weight:400;font-size:13px}
+
+/* do/don't */
+.rule{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);font-size:15px;color:var(--body)}
+.rule:last-child{border-bottom:0}
+.rule i{font-style:normal;flex-shrink:0;width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.do i{background:rgba(120,215,180,.3);color:#1E6B50}
+.dont i{background:rgba(242,124,124,.22);color:#A23B3F}
+
+/* presenter */
+.present{position:fixed;inset:0;z-index:100;background:#E9EFF8;display:none;flex-direction:column}
+.present.on{display:flex}
+.present .pbar{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:14px}
+.present .pbar .count{font-family:'Sora',sans-serif;font-weight:600;margin-right:auto}
+.present .pstage{flex:1;position:relative;overflow:hidden}
+.present .pstage .inner{position:absolute;width:1920px;height:1080px;transform-origin:0 0;box-shadow:0 30px 80px -30px rgba(20,36,64,.45)}
+.present.full .pbar{position:absolute;top:0;left:0;right:0;z-index:2;opacity:0;transition:opacity .2s}
+.present.full .pbar:hover{opacity:1}
+.navbtn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(80,110,170,.2);background:rgba(255,255,255,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.navbtn:hover{background:#fff}
+
+footer{max-width:1240px;margin:0 auto;padding:30px 16px 50px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width: 960px){
+  .hero{grid-template-columns:1fr}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nav nav{display:none}
+  .nav .btn{margin-left:auto}
+}
+@media (max-width: 600px){
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .type-row{grid-template-columns:1fr;gap:6px}
+  .type-row .spec{text-align:left}
+  .meta{grid-template-columns:1fr}
+  .meta div:nth-child(odd){border-right:0}
+  .meta div:nth-last-child(2){border-bottom:1px solid var(--line)}
+}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} .thumb{transition:none} }
+</style>
+</head>
+<body>
+<div class="atmo" aria-hidden="true">
+  <div class="orb" style="left:55%;top:-18%;width:760px;height:760px;background:radial-gradient(circle,rgba(120,160,255,.5),rgba(120,160,255,0) 68%)"></div>
+  <div class="orb" style="left:-12%;top:30%;width:640px;height:640px;background:radial-gradient(circle,rgba(110,210,235,.35),rgba(110,210,235,0) 68%)"></div>
+  <div class="orb" style="left:70%;top:55%;width:600px;height:600px;background:radial-gradient(circle,rgba(140,190,255,.4),rgba(140,190,255,0) 68%)"></div>
+  <div class="orb" style="left:25%;top:80%;width:420px;height:420px;background:radial-gradient(circle,rgba(120,215,180,.3),rgba(120,215,180,0) 68%)"></div>
+  <div class="orb" style="left:88%;top:-6%;width:320px;height:320px;background:radial-gradient(circle,rgba(255,220,130,.4),rgba(255,220,130,0) 68%)"></div>
+  <div class="dots"></div>
+</div>
+
+<header class="top">
+  <div class="nav glass-soft">
+    <div class="brand"><span class="logo"></span><span>Glacier Glass</span></div>
+    <nav aria-label="章节">
+      <a href="#concept">设计理念</a><a href="#color">色彩</a><a href="#type">字体</a><a href="#fx">材质效果</a><a href="#comp">组件</a><a href="#grid">版式</a><a href="#slides">页面</a><a href="#rules">规范</a>
+    </nav>
+    <button class="btn" type="button" data-present="0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l14 8-14 8z"></path></svg>演示模式
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="kicker">UI Theme Proposal · v1.0</div>
+      <h1>学术演示主题方案<span class="en grad">Glacier Glass</span></h1>
+      <p>为「大模型推理框架 vLLM 介绍」打造的白天模式演示主题：以淡蓝为主色，用弥散光斑、磨砂玻璃与不规则形状营造冷调、通透、克制的前沿感，同时承载学术内容的高信息密度。</p>
+      <div class="chips"><span class="chip">淡蓝主导</span><span class="chip c">磨砂玻璃</span><span class="chip m">弥散光斑</span><span class="chip y">不规则形状</span><span class="chip v">iOS 质感</span></div>
+    </div>
+    <div class="glass" style="padding:0;overflow:hidden">
+      <button class="hero-slide thumb" type="button" data-present="0" aria-label="打开封面演示" style="border-radius:0;border:0;box-shadow:none">
+        <div class="scaler"><div class="inner" data-slide="0"></div></div>
+      </button>
+      <div class="meta">
+        <div><span class="label">Canvas</span><b>1920×1080</b></div>
+        <div><span class="label">Pages</span><b>11 页</b></div>
+        <div><span class="label">Mode</span><b>Light</b></div>
+        <div><span class="label">Tone</span><b>Cool / Calm</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONCEPT -->
+  <section id="concept">
+    <div class="kicker">01 · Concept</div>
+    <h2 class="sec">设计理念：冷光、通透、层次分明</h2>
+    <p class="lead">主题围绕「冰川之上的光」展开：背景是柔和的冷白与漂浮的彩色光晕，内容承载在半透明的磨砂玻璃层上，形成清晰的前后景关系，让大段文字依然易读。</p>
+    <div class="grid g4">
+      <div class="glass card"><div class="label">Tone</div><h3 style="margin-top:10px">冷调主色</h3><p>淡蓝为绝对主体，青、绿、黄、紫为辅助光色，珊瑚红只作点睛。饱和度低、明度高，抢眼但不刺眼。</p></div>
+      <div class="glass card"><div class="label">Material</div><h3 style="margin-top:10px">磨砂玻璃</h3><p>内容卡片使用 26px 背景模糊 + 半透明白渐变 + 白色描边高光，模拟 iOS 毛玻璃层级。</p></div>
+      <div class="glass card"><div class="label">Atmosphere</div><h3 style="margin-top:10px">弥散光斑</h3><p>每页 2–4 个径向渐变光斑与至多 1 个不规则 blob 形状，位置逐页变化，形成连续而不重复的节奏。</p></div>
+      <div class="glass card"><div class="label">Density</div><h3 style="margin-top:10px">学术密度</h3><p>正文 21–24px、行高 1.6–1.75，配合卡片分组、编号与数据高亮，让文字多的页面依然有序。</p></div>
+    </div>
+  </section>
+
+  <!-- COLOR -->
+  <section id="color">
+    <div class="kicker">02 · Color</div>
+    <h2 class="sec">色彩系统</h2>
+    <p class="lead">主色蓝约占彩色面积的七成以上；辅助光色只出现在光斑、图标底色和标签中，不用于大面积填充。</p>
+
+    <div class="subh">主色 · 冰川蓝 <span>Primary</span></div>
+    <div class="grid g4" style="grid-template-columns:repeat(6,minmax(0,1fr))" id="sw-primary"></div>
+
+    <div class="subh">辅助光色 <span>Accent · 仅用于光斑 / 图标底 / 标签</span></div>
+    <div class="grid" style="grid-template-columns:repeat(5,minmax(0,1fr))" id="sw-accent"></div>
+
+    <div class="subh">中性色 <span>Neutral · 文字与底色</span></div>
+    <div class="grid" style="grid-template-columns:repeat(6,minmax(0,1fr))" id="sw-neutral"></div>
+
+    <div class="subh">面积配比 <span>单页视觉权重</span></div>
+    <div class="ratio">
+      <div style="flex:60;background:linear-gradient(160deg,#F8FBFF,#EEF4FE)">冷白底 60%</div>
+      <div style="flex:25;background:linear-gradient(120deg,#8CBEFF,#78A0FF)">冰川蓝 25%</div>
+      <div style="flex:10;background:linear-gradient(90deg,#6ED2EB,#78D7B4,#FFDC82)">光色 10%</div>
+      <div style="flex:5;background:#F27C7C" title="珊瑚红点缀 5%"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;font-size:12px;color:var(--muted);margin-top:6px">珊瑚红 ≤5%，仅用于标题前的指示圆点</div>
+
+    <div class="subh">渐变令牌 <span>Gradient tokens</span></div>
+    <div class="grid g3">
+      <div class="glass card"><div style="height:64px;border-radius:14px;background:linear-gradient(100deg,#2F66EE,#4F8DFA 50%,#35B3DA)"></div><h3 style="margin-top:14px">标题渐变 grad-title</h3><p>用于 vLLM、Thanks 与关键数字。<code>100° #2F66EE → #4F8DFA → #35B3DA</code></p></div>
+      <div class="glass card"><div style="height:64px;border-radius:14px;background:linear-gradient(160deg,#F8FBFF,#F2F7FE 50%,#F1F8FD);border:1px solid var(--line)"></div><h3 style="margin-top:14px">页面底色 grad-page</h3><p>冷白三段渐变，避免纯白的单薄感。<code>160° #F8FBFF → #F2F7FE → #F1F8FD</code></p></div>
+      <div class="glass card"><div style="height:64px;border-radius:14px;background:linear-gradient(90deg,#4F86F7,#6FA8FF 60%,#6FD0E6)"></div><h3 style="margin-top:14px">数据高亮 grad-data</h3><p>用于图表中的重点柱与进度条。<code>90° #4F86F7 → #6FA8FF → #6FD0E6</code></p></div>
+    </div>
+  </section>
+
+  <!-- TYPE -->
+  <section id="type">
+    <div class="kicker">03 · Typography</div>
+    <h2 class="sec">字体与字号层级</h2>
+    <p class="lead">中文用思源黑体（Noto Sans SC），数字与英文用几何感更强的 Sora，代码与标签用 JetBrains Mono。PPT 版本自动映射为微软雅黑 / Consolas，字号按 1920 画布 ×0.5 换算为 pt。</p>
+    <div class="glass" style="padding:6px 0">
+      <div class="type-row"><div><div class="label">Display</div></div><div class="sample sora grad" style="font-size:clamp(40px,6vw,76px);font-weight:800;letter-spacing:-.04em;line-height:1.1">vLLM</div><div class="spec">Sora 800<br>190px · 95pt</div></div>
+      <div class="type-row"><div><div class="label">Cover title</div></div><div class="sample" style="font-size:clamp(28px,3.6vw,46px);font-weight:900">大模型推理框架</div><div class="spec">Noto Sans SC 900<br>92px · 46pt</div></div>
+      <div class="type-row"><div><div class="label">H2 页标题</div></div><div class="sample" style="font-size:clamp(22px,2.4vw,30px);font-weight:700">PagedAttention：把「分页」带入 KV Cache</div><div class="spec">700 · lh 1.15<br>58px · 29pt</div></div>
+      <div class="type-row"><div><div class="label">H3 卡片标题</div></div><div class="sample" style="font-size:20px;font-weight:700">KV Cache 显存巨大</div><div class="spec">700<br>30px · 15pt</div></div>
+      <div class="type-row"><div><div class="label">Stat 数字</div></div><div class="sample sora" style="font-size:30px;font-weight:700;color:var(--blue-900)">20–38%</div><div class="spec">Sora 700<br>52–68px · 26–34pt</div></div>
+      <div class="type-row"><div><div class="label">Lead 导语</div></div><div class="sample" style="font-size:16px;color:#4A5873">自回归生成分为 Prefill 与 Decode 两个阶段</div><div class="spec">400 · lh 1.6<br>24px · 12pt</div></div>
+      <div class="type-row"><div><div class="label">Body 正文</div></div><div class="sample" style="font-size:15px;color:#3F4E6A">传统系统按最大长度为每个请求预分配连续显存</div><div class="spec">400 · lh 1.7<br>19–21px · 10–11pt</div></div>
+      <div class="type-row"><div><div class="label">Kicker 标签</div></div><div class="sample mono" style="font-size:13px;letter-spacing:.22em;color:#3F6FE0">03 · PAGEDATTENTION</div><div class="spec">Mono 500 · ls .22em<br>17px · 8.5pt</div></div>
+      <div class="type-row"><div><div class="label">Caption 注释</div></div><div class="sample" style="font-size:13px;color:var(--muted)">数据来源：Kwon et al., SOSP 2023</div><div class="spec">400 · #5F6E87<br>15px · 7.5pt</div></div>
+    </div>
+  </section>
+
+  <!-- EFFECTS -->
+  <section id="fx">
+    <div class="kicker">04 · Material &amp; Effects</div>
+    <h2 class="sec">材质与效果</h2>
+    <p class="lead">六种视觉元素组合构成主题的「空气感」。下方为实时渲染示例与可直接复用的 CSS。</p>
+    <div class="grid g3 fx">
+      <div class="glass card">
+        <div class="stage">
+          <div class="orb" style="left:10%;top:-20%;width:220px;height:220px;background:radial-gradient(circle,rgba(120,160,255,.7),rgba(120,160,255,0) 68%)"></div>
+          <div class="orb" style="right:5%;bottom:-30%;width:200px;height:200px;background:radial-gradient(circle,rgba(110,210,235,.6),rgba(110,210,235,0) 68%)"></div>
+          <div class="glass" style="position:relative;width:62%;padding:18px 20px"><div class="label">Glass</div><div style="font-weight:700;margin-top:4px">磨砂玻璃卡片</div></div>
+        </div>
+        <div class="body"><h3>磨砂玻璃 Glass</h3><p>主内容容器。圆角 28px，内高光 + 双层柔影。</p>
+<pre class="code">background: linear-gradient(140deg,
+  rgba(255,255,255,.78), rgba(255,255,255,.46));
+backdrop-filter: blur(26px) saturate(160%);
+border: 1px solid rgba(255,255,255,.9);
+border-radius: 28px;</pre></div>
+      </div>
+      <div class="glass card">
+        <div class="stage">
+          <div class="orb" style="left:8%;top:10%;width:200px;height:200px;background:radial-gradient(circle,rgba(120,160,255,.6),rgba(120,160,255,0) 68%)"></div>
+          <div class="orb" style="left:40%;top:-10%;width:160px;height:160px;background:radial-gradient(circle,rgba(255,220,130,.6),rgba(255,220,130,0) 68%)"></div>
+          <div class="orb" style="left:52%;top:30%;width:200px;height:200px;background:radial-gradient(circle,rgba(120,215,180,.55),rgba(120,215,180,0) 68%)"></div>
+          <div class="orb" style="left:26%;top:50%;width:120px;height:120px;background:radial-gradient(circle,rgba(250,140,140,.45),rgba(250,140,140,0) 68%)"></div>
+        </div>
+        <div class="body"><h3>弥散光斑 Orb</h3><p>径向渐变 + 40px 模糊，透明度 0.3–0.55，直径 300–900px。</p>
+<pre class="code">background: radial-gradient(circle,
+  rgba(120,160,255,.55) 0%,
+  rgba(120,160,255,0) 68%);
+filter: blur(40px);</pre></div>
+      </div>
+      <div class="glass card">
+        <div class="stage">
+          <svg width="190" height="190" viewBox="0 0 500 500" style="opacity:.6;transform:rotate(-12deg)" aria-hidden="true"><defs><linearGradient id="fxb1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(120,160,255)"></stop><stop offset="1" stop-color="rgb(110,210,235)" stop-opacity=".25"></stop></linearGradient></defs><path d="M421,300Q398,370,331,402Q264,434,190,420Q116,406,86,334Q56,262,95,196Q134,130,206,96Q278,62,346,104Q414,146,429,223Q444,300,421,300Z" fill="url(#fxb1)"></path></svg>
+        </div>
+        <div class="body"><h3>不规则形状 Blob</h3><p>SVG 贝塞尔有机形，双色线性渐变，透明度 0.3–0.45，随机旋转。</p>
+<pre class="code">&lt;path d="M421,300Q398,370,331,402…Z"
+  fill="url(#blob-grad)" /&gt;
+opacity: .45; transform: rotate(-12deg);</pre></div>
+      </div>
+      <div class="glass card">
+        <div class="stage"><div class="dots" style="-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 0%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 50%,#000 0%,transparent 75%);background-image:radial-gradient(rgba(60,90,160,.28) 1.2px,transparent 1.6px)"></div></div>
+        <div class="body"><h3>点阵网格 Dot grid</h3><p>30px 间距的细点阵，带径向遮罩向四周淡出，增加科技秩序感。</p>
+<pre class="code">background-image: radial-gradient(
+  rgba(60,90,160,.13) 1.2px, transparent 1.6px);
+background-size: 30px 30px;
+mask-image: radial-gradient(ellipse, #000, transparent 70%);</pre></div>
+      </div>
+      <div class="glass card">
+        <div class="stage"><span class="sora grad" style="font-size:72px;font-weight:800;letter-spacing:-.04em">24×</span></div>
+        <div class="body"><h3>渐变文字 Gradient text</h3><p>只用于封面主词、结尾页与关键数字，单页不超过 3 处。</p>
+<pre class="code">background: linear-gradient(100deg,
+  #2F66EE, #4F8DFA 50%, #35B3DA);
+-webkit-background-clip: text;
+color: transparent;</pre></div>
+      </div>
+      <div class="glass card">
+        <div class="stage">
+          <div style="width:180px;height:180px;position:relative">
+            <div style="position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(79,134,247,.28)"></div>
+            <div style="position:absolute;right:11px;top:11px;width:112px;height:112px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#EEF4FF 0%,#B4CFFF 30%,#7FA6F8 62%,#5A88F2 100%)"></div>
+            <div class="glass" style="position:absolute;left:11px;bottom:14px;width:94px;height:94px;border-radius:50%;display:flex;align-items:center;justify-content:center"><span class="sora" style="font-size:13px;font-weight:700">Q&amp;A</span></div>
+          </div>
+        </div>
+        <div class="body"><h3>主视觉 Hero lens</h3><p>封面与结尾页唯一的主视觉：1 个蓝色光球 + 1 枚磨砂玻璃圆 + 1 条细线圆环。三层即成，易于临摹，不堆砌小色块。</p>
+<pre class="code">圆环  size 100%  border 1.5px rgba(79,134,247,.28)
+光球  62%  radial-gradient(at 32% 28%,
+      #EEF4FF, #B4CFFF 30%, #7FA6F8 62%, #5A88F2)
+玻璃圆 52%  .glass + border-radius 50%，左下错位叠放</pre></div>
+      </div>
+</div>
+    </div>
+  </section>
+
+  <!-- COMPONENTS -->
+  <section id="comp">
+    <div class="kicker">05 · Components</div>
+    <h2 class="sec">组件库</h2>
+    <p class="lead">所有页面由以下组件拼装，保持统一的圆角、间距与色彩逻辑。</p>
+    <div class="grid g2">
+      <div class="glass card"><div class="comp-stage">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div class="glass-soft" style="display:flex;align-items:center;gap:10px;padding:8px 16px 8px 10px;border-radius:999px"><span class="logo" style="width:22px;height:22px"></span><span style="font-size:14px;font-weight:500;color:#34445F">vLLM · 大模型推理框架介绍</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span class="mono" style="font-size:12px;letter-spacing:.2em;color:#5F6E87">03 · PAGEDATTENTION</span><span class="sora" style="font-weight:600">05<span style="color:#8A97AD;font-weight:400"> / 11</span></span></div>
+        </div></div>
+        <h3 style="margin-top:16px">页眉 Header</h3><p>左侧轻玻璃胶囊 + 渐变标志；右侧章节代号与页码。</p></div>
+
+      <div class="glass card"><div class="comp-stage">
+        <div class="kicker">02 · Overview</div>
+        <div style="font-size:26px;font-weight:700;line-height:1.2">vLLM：高吞吐、显存高效的推理引擎</div>
+      </div>
+        <h3 style="margin-top:16px">标题组 Kicker + H2</h3><p>珊瑚红圆点 + 等宽英文章节标签，下接中文主标题。不使用下划线装饰。</p></div>
+
+      <div class="glass card"><div class="comp-stage" style="flex-direction:row;gap:16px;flex-wrap:wrap;align-items:stretch">
+        <div class="glass" style="padding:20px 22px;flex:1;min-width:130px;position:relative;overflow:hidden"><div style="position:absolute;right:-30px;bottom:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(120,160,255,.5),rgba(120,160,255,0) 70%)"></div><div><span class="sora grad" style="font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1">&lt;4</span><span class="sora" style="font-size:18px;font-weight:600;color:var(--blue-900)"> %</span></div><div style="font-size:13px;color:var(--body);margin-top:6px">KV Cache 显存浪费</div></div>
+        <div class="glass" style="padding:20px 22px;flex:1;min-width:130px;position:relative;overflow:hidden"><div style="position:absolute;right:-30px;bottom:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(110,210,235,.5),rgba(110,210,235,0) 70%)"></div><div><span class="sora grad" style="font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1">24</span><span class="sora" style="font-size:18px;font-weight:600;color:var(--blue-900)"> ×</span></div><div style="font-size:13px;color:var(--body);margin-top:6px">最高吞吐提升</div></div>
+      </div>
+        <h3 style="margin-top:16px">数据卡 Stat tile</h3><p>大号渐变数字 + 单位 + 说明，右下角藏一枚同色光晕。</p></div>
+
+      <div class="glass card"><div class="comp-stage">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(120,160,255,.35),rgba(120,160,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"></path></svg></div>
+          <div><div style="font-weight:700">自动前缀缓存</div><div style="font-size:13px;color:var(--body)">复用相同前缀的 KV 块</div></div>
+        </div>
+        <div class="chips"><span class="chip">高吞吐</span><span class="chip c">OpenAI 兼容</span><span class="chip m">多硬件</span></div>
+      </div>
+        <h3 style="margin-top:16px">图标块 &amp; 标签 Icon tile / Chip</h3><p>1.7px 线性图标置于半透明光色方块中；标签为 16% 填充 + 35% 描边胶囊。</p></div>
+
+      <div class="glass card"><div class="comp-stage">
+        <div style="display:flex;gap:16px">
+          <div style="display:flex;flex-direction:column;align-items:center;width:18px"><div style="width:14px;height:14px;border-radius:50%;background:rgb(120,160,255);box-shadow:0 0 0 5px rgba(120,160,255,.22);margin-top:6px"></div><div style="flex:1;width:2px;background:linear-gradient(rgba(120,160,255,.6),rgba(120,160,255,0))"></div></div>
+          <div style="padding-bottom:8px"><div><span class="sora" style="font-weight:700;color:var(--blue-900)">2023.10</span>&nbsp;&nbsp;<b>SOSP 2023</b></div><div style="font-size:13px;color:var(--body)">PagedAttention 论文发表</div></div>
+        </div>
+        <div style="display:flex;gap:16px">
+          <div style="display:flex;flex-direction:column;align-items:center;width:18px"><div style="width:14px;height:14px;border-radius:50%;background:rgb(120,215,180);box-shadow:0 0 0 5px rgba(120,215,180,.22);margin-top:6px"></div></div>
+          <div><div><span class="sora" style="font-weight:700;color:var(--blue-900)">2025</span>&nbsp;&nbsp;<b>V1 引擎</b></div><div style="font-size:13px;color:var(--body)">核心架构重构</div></div>
+        </div>
+      </div>
+        <h3 style="margin-top:16px">时间线 Timeline</h3><p>光晕圆点 + 渐隐连接线，日期用 Sora 蓝色强调。</p></div>
+
+      <div class="glass card"><div class="comp-stage">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span class="sora" style="width:40px;height:40px;flex-shrink:0;border-radius:13px;display:flex;align-items:center;justify-content:center;font-weight:700;background:linear-gradient(140deg,rgba(120,160,255,.5),rgba(120,160,255,.15));border:1px solid rgba(255,255,255,.95)">2</span>
+          <div style="flex:1;min-width:0"><div style="font-weight:700">启动 OpenAI 兼容服务</div><pre class="code" style="margin-top:8px">vllm serve Qwen/Qwen2.5-7B-Instruct</pre></div>
+        </div>
+      </div>
+        <h3 style="margin-top:16px">步骤 &amp; 代码块 Step / Code</h3><p>编号玻璃方块 + 冰蓝底代码框，语法高亮只用蓝、绿、红三色。</p></div>
+    </div>
+  </section>
+
+  <!-- GRID -->
+  <section id="grid">
+    <div class="kicker">06 · Layout</div>
+    <h2 class="sec">版式网格</h2>
+    <p class="lead">16:9 画布，固定安全边距；页眉、标题组、内容区、页脚四段纵向排布，内容区使用 2 / 3 / 4 列等分网格。</p>
+    <div class="glass" style="padding:24px">
+      <svg viewBox="0 0 1920 1080" style="width:100%;height:auto;display:block;border-radius:14px;background:linear-gradient(160deg,#F8FBFF,#EEF4FE)" role="img" aria-label="1920×1080 版式网格示意">
+        <rect x="112" y="56" width="1696" height="980" fill="none" stroke="#F27C7C" stroke-width="3" stroke-dasharray="14 10"></rect>
+        <rect x="112" y="56" width="1696" height="46" rx="23" fill="rgba(120,160,255,.18)"></rect>
+        <text x="140" y="87" font-size="24" fill="#2A4FB8" font-family="JetBrains Mono, monospace">HEADER · 46</text>
+        <rect x="112" y="138" width="1696" height="150" rx="16" fill="rgba(140,190,255,.2)"></rect>
+        <text x="140" y="222" font-size="28" fill="#2A4FB8" font-family="JetBrains Mono, monospace">KICKER + H2 (+ LEAD)</text>
+        <rect x="112" y="324" width="546" height="610" rx="28" fill="rgba(255,255,255,.8)" stroke="#fff" stroke-width="2"></rect>
+        <rect x="687" y="324" width="546" height="610" rx="28" fill="rgba(255,255,255,.8)" stroke="#fff" stroke-width="2"></rect>
+        <rect x="1262" y="324" width="546" height="610" rx="28" fill="rgba(255,255,255,.8)" stroke="#fff" stroke-width="2"></rect>
+        <text x="385" y="640" font-size="30" text-anchor="middle" fill="#5F6E87" font-family="Sora, sans-serif">COL 1</text>
+        <text x="960" y="640" font-size="30" text-anchor="middle" fill="#5F6E87" font-family="Sora, sans-serif">COL 2</text>
+        <text x="1535" y="640" font-size="30" text-anchor="middle" fill="#5F6E87" font-family="Sora, sans-serif">COL 3</text>
+        <line x1="112" y1="970" x2="1808" y2="970" stroke="rgba(80,110,170,.35)" stroke-width="2"></line>
+        <text x="112" y="1010" font-size="24" fill="#5F6E87" font-family="JetBrains Mono, monospace">FOOTER · 来源 / 标语</text>
+        <text x="16" y="40" font-size="24" fill="#F27C7C" font-family="JetBrains Mono, monospace">safe area 112 / 56 / 44</text>
+        <text x="663" y="310" font-size="22" fill="#2A4FB8" font-family="JetBrains Mono, monospace">gap 28</text>
+      </svg>
+      <div class="grid g4" style="margin-top:20px">
+        <div><div class="label">Safe area</div><div style="font-weight:700">左右 112 · 上 56 · 下 44</div></div>
+        <div><div class="label">Section gap</div><div style="font-weight:700">纵向 36px</div></div>
+        <div><div class="label">Card gap</div><div style="font-weight:700">22 – 28px</div></div>
+        <div><div class="label">Radius</div><div style="font-weight:700">28 卡片 · 18 图标 · 999 胶囊</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDES -->
+  <section id="slides">
+    <div class="kicker">07 · Pages</div>
+    <h2 class="sec">页面方案 · 11 页</h2>
+    <p class="lead">点击任意页面进入演示模式（← → 翻页，F 全屏，Esc 退出）。</p>
+    <div class="grid g2" id="gallery"></div>
+  </section>
+
+  <!-- RULES -->
+  <section id="rules">
+    <div class="kicker">08 · Guidelines</div>
+    <h2 class="sec">使用规范</h2>
+    <p class="lead">扩展新页面时遵循以下原则，保持整套演示的气质统一。</p>
+    <div class="grid g2">
+      <div class="glass card do">
+        <h3 style="margin-bottom:6px">推荐 Do</h3>
+        <div class="rule"><i>✓</i><span>蓝色系占彩色面积 70% 以上，每页只选 1–2 种辅助光色。</span></div>
+        <div class="rule"><i>✓</i><span>文字一律放在玻璃卡片或纯净底色上，保证 4.5:1 以上对比度。</span></div>
+        <div class="rule"><i>✓</i><span>光斑位置每页变化，大光斑放在远离正文的角落。</span></div>
+        <div class="rule"><i>✓</i><span>数据页用大号 Sora 数字 + 来源注释，结论先行。</span></div>
+        <div class="rule"><i>✓</i><span>封面与结尾只用一个主视觉（光球 + 玻璃圆 + 细环），留出大面积呼吸空间。</span></div>
+      </div>
+      <div class="glass card dont">
+        <h3 style="margin-bottom:6px">避免 Don't</h3>
+        <div class="rule"><i>✕</i><span>不使用纯黑背景或纯黑大字；最深文字色为 #142440。</span></div>
+        <div class="rule"><i>✕</i><span>不把高饱和色用于大面积填充；紫色、珊瑚红只做点缀。</span></div>
+        <div class="rule"><i>✕</i><span>不加标题下划线、侧边色条等装饰条；层级靠留白与卡片表达。</span></div>
+        <div class="rule"><i>✕</i><span>渐变文字单页不超过 3 处，正文永远是实色。</span></div>
+        <div class="rule"><i>✕</i><span>不在封面、结尾堆砌多色小方块或格子阵列；装饰元素每页不超过 3 个。</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Glacier Glass · vLLM 学术演示 UI 主题方案 v1.0</span>
+  <span>画布 1920×1080 · 字体 Noto Sans SC / Sora / JetBrains Mono</span>
+</footer>
+
+<div class="present" id="present" role="dialog" aria-modal="true" aria-label="演示模式">
+  <div class="pbar">
+    <span class="count" id="pcount">1 / 11</span>
+    <button class="navbtn" type="button" id="pprev" aria-label="上一页"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+    <button class="navbtn" type="button" id="pnext" aria-label="下一页"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+    <button class="btn ghost" type="button" id="pfull">全屏 F</button>
+    <button class="btn ghost" type="button" id="pclose">退出 Esc</button>
+  </div>
+  <div class="pstage" id="pstage"></div>
+</div>
+
+<template id="slides-src">
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:1000px;top:-280px;width:900px;height:900px;background:radial-gradient(circle,rgba(120,160,255,0.45) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:-220px;top:560px;width:640px;height:640px;background:radial-gradient(circle,rgba(110,210,235,0.28) 0%,rgba(110,210,235,0) 68%)"></div><div class="orb" style="left:1380px;top:640px;width:560px;height:560px;background:radial-gradient(circle,rgba(140,190,255,0.35) 0%,rgba(140,190,255,0) 68%)"></div><svg width="420" height="420" viewBox="0 0 500 500" style="position:absolute;left:80px;top:700px;transform:rotate(20deg);opacity:0.22;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="gc2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(120,160,255)"></stop><stop offset="1" stop-color="rgb(110,210,235)" stop-opacity=".25"></stop></linearGradient></defs><path d="M398,318Q386,386,318,418Q250,450,176,428Q102,406,78,331Q54,256,97,186Q140,116,221,84Q302,52,356,116Q410,180,410,249Q410,318,398,318Z" fill="url(#gc2)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">TECH TALK</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">01<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="flex-grow:1;display:flex;align-items:center;gap:80px">
+<div style="flex-grow:1;display:flex;flex-direction:column;gap:34px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:19px;letter-spacing:.24em;color:#3F6FE0;font-weight:500">LLM INFERENCE &amp; SERVING</span></div>
+<h1 style="margin:0;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:92px;line-height:1.1;font-weight:900;letter-spacing:.01em;color:#142440">大模型推理框架</span>
+<span style="display:flex;align-items:baseline;gap:28px"><span class="sora grad" style="font-size:190px;line-height:1;font-weight:800;letter-spacing:-.04em">vLLM</span><span style="font-size:92px;font-weight:900;color:#142440">介绍</span></span>
+</h1>
+<p style="margin:0;font-size:30px;line-height:1.6;color:#3F4E6A;max-width:900px">从 PagedAttention 到高吞吐服务：<br/>核心原理、系统架构与工程实践</p>
+<div class="glass" style="display:flex;gap:44px;padding:24px 36px;align-self:flex-start;border-radius:24px">
+<div style="display:flex;flex-direction:column;gap:6px"><span class="mono" style="font-size:14px;letter-spacing:.2em;color:#5F6E87">PRESENTER</span><span style="font-size:22px;font-weight:500">[汇报人姓名]</span></div>
+<div style="width:1px;background:rgba(80,110,170,.2)"></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span class="mono" style="font-size:14px;letter-spacing:.2em;color:#5F6E87">AFFILIATION</span><span style="font-size:22px;font-weight:500">[单位 / 实验室]</span></div>
+<div style="width:1px;background:rgba(80,110,170,.2)"></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span class="mono" style="font-size:14px;letter-spacing:.2em;color:#5F6E87">DATE</span><span class="sora" style="font-size:22px;font-weight:600">[2026.09]</span></div>
+</div>
+</div>
+<div style="width:620px;height:620px;flex-shrink:0;position:relative">
+<div style="position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(79,134,247,.28)"></div>
+<div style="position:absolute;right:37px;top:37px;width:384px;height:384px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#EEF4FF 0%,#B4CFFF 30%,#7FA6F8 62%,#5A88F2 100%)"></div>
+<div class="glass" style="position:absolute;left:37px;bottom:49px;width:322px;height:322px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+<span class="mono" style="font-size:14px;letter-spacing:.2em;color:#5F6E87">CORE IDEA</span>
+<span class="sora" style="font-size:30px;font-weight:700;color:#142440;letter-spacing:-.01em">PagedAttention</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:-180px;top:500px;width:760px;height:760px;background:radial-gradient(circle,rgba(120,160,255,0.45) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:1300px;top:-240px;width:760px;height:760px;background:radial-gradient(circle,rgba(140,190,255,0.4) 0%,rgba(140,190,255,0) 68%)"></div><div class="orb" style="left:900px;top:700px;width:560px;height:560px;background:radial-gradient(circle,rgba(120,215,180,0.35) 0%,rgba(120,215,180,0) 68%)"></div><svg width="520" height="520" viewBox="0 0 500 500" style="position:absolute;left:1500px;top:620px;transform:rotate(30deg);opacity:0.35;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="ga1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(110,210,235)"></stop><stop offset="1" stop-color="rgb(120,160,255)" stop-opacity=".25"></stop></linearGradient></defs><path d="M398,318Q386,386,318,418Q250,450,176,428Q102,406,78,331Q54,256,97,186Q140,116,221,84Q302,52,356,116Q410,180,410,249Q410,318,398,318Z" fill="url(#ga1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">CONTENTS</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">02<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">CONTENTS · 目录</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">今天我们聊什么</h2></div>
+<div style="flex-grow:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px"><div class="glass" style="padding:36px 36px 34px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+<div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(120,160,255,.45),rgba(120,160,255,0) 70%)"></div>
+<span class="sora" style="font-size:64px;font-weight:300;line-height:1;color:#2A4FB8;letter-spacing:-.02em">01</span>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:32px;font-weight:700">LLM 推理的挑战</span><span class="sora" style="font-size:17px;color:#5F6E87;letter-spacing:.06em;text-transform:uppercase">Why inference is hard</span></div>
+<span style="font-size:21px;color:#43526B;line-height:1.6">KV Cache 显存、碎片化与访存瓶颈</span>
+</div><div class="glass" style="padding:36px 36px 34px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+<div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(140,190,255,.45),rgba(140,190,255,0) 70%)"></div>
+<span class="sora" style="font-size:64px;font-weight:300;line-height:1;color:#2A4FB8;letter-spacing:-.02em">02</span>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:32px;font-weight:700">vLLM 概览</span><span class="sora" style="font-size:17px;color:#5F6E87;letter-spacing:.06em;text-transform:uppercase">What is vLLM</span></div>
+<span style="font-size:21px;color:#43526B;line-height:1.6">项目起源、定位与发展历程</span>
+</div><div class="glass" style="padding:36px 36px 34px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+<div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(110,210,235,.45),rgba(110,210,235,0) 70%)"></div>
+<span class="sora" style="font-size:64px;font-weight:300;line-height:1;color:#2A4FB8;letter-spacing:-.02em">03</span>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:32px;font-weight:700">PagedAttention</span><span class="sora" style="font-size:17px;color:#5F6E87;letter-spacing:.06em;text-transform:uppercase">Core idea</span></div>
+<span style="font-size:21px;color:#43526B;line-height:1.6">分页式 KV Cache 管理与写时复制</span>
+</div><div class="glass" style="padding:36px 36px 34px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+<div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(120,215,180,.45),rgba(120,215,180,0) 70%)"></div>
+<span class="sora" style="font-size:64px;font-weight:300;line-height:1;color:#2A4FB8;letter-spacing:-.02em">04</span>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:32px;font-weight:700">调度与连续批处理</span><span class="sora" style="font-size:17px;color:#5F6E87;letter-spacing:.06em;text-transform:uppercase">Scheduling</span></div>
+<span style="font-size:21px;color:#43526B;line-height:1.6">迭代级调度、抢占与 Chunked Prefill</span>
+</div><div class="glass" style="padding:36px 36px 34px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+<div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,220,130,.45),rgba(255,220,130,0) 70%)"></div>
+<span class="sora" style="font-size:64px;font-weight:300;line-height:1;color:#2A4FB8;letter-spacing:-.02em">05</span>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:32px;font-weight:700">系统架构</span><span class="sora" style="font-size:17px;color:#5F6E87;letter-spacing:.06em;text-transform:uppercase">Architecture</span></div>
+<span style="font-size:21px;color:#43526B;line-height:1.6">V1 引擎：EngineCore、Scheduler、Worker</span>
+</div><div class="glass" style="padding:36px 36px 34px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden">
+<div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(250,140,140,.45),rgba(250,140,140,0) 70%)"></div>
+<span class="sora" style="font-size:64px;font-weight:300;line-height:1;color:#2A4FB8;letter-spacing:-.02em">06</span>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:32px;font-weight:700">特性、性能与实践</span><span class="sora" style="font-size:17px;color:#5F6E87;letter-spacing:.06em;text-transform:uppercase">Features &amp; practice</span></div>
+<span style="font-size:21px;color:#43526B;line-height:1.6">功能矩阵、性能数据与快速上手</span>
+</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(80,110,170,.16);padding-top:18px">
+<span style="font-size:15px;color:#5F6E87">vLLM 技术分享 · 目录</span>
+<span class="sora" style="font-size:15px;color:#5F6E87;letter-spacing:.08em">EASY · FAST · CHEAP LLM SERVING</span>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:1300px;top:-300px;width:820px;height:820px;background:radial-gradient(circle,rgba(120,160,255,0.5) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:-240px;top:640px;width:700px;height:700px;background:radial-gradient(circle,rgba(110,210,235,0.4) 0%,rgba(110,210,235,0) 68%)"></div><div class="orb" style="left:700px;top:800px;width:420px;height:420px;background:radial-gradient(circle,rgba(255,220,130,0.35) 0%,rgba(255,220,130,0) 68%)"></div><svg width="480" height="480" viewBox="0 0 500 500" style="position:absolute;left:-80px;top:-120px;transform:rotate(0deg);opacity:0.3;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="gh1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(140,190,255)"></stop><stop offset="1" stop-color="rgb(120,160,255)" stop-opacity=".25"></stop></linearGradient></defs><path d="M421,300Q398,370,331,402Q264,434,190,420Q116,406,86,334Q56,262,95,196Q134,130,206,96Q278,62,346,104Q414,146,429,223Q444,300,421,300Z" fill="url(#gh1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">01 · CHALLENGES</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">03<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">01 · CHALLENGES</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">LLM 推理的核心挑战：瓶颈在显存，而非算力</h2><p style="margin:0;font-size:24px;line-height:1.6;color:#4A5873;max-width:1400px;text-wrap:pretty">自回归生成分为 <b>Prefill</b>（并行处理整段 prompt，计算密集）与 <b>Decode</b>（每步只产出一个 token，访存密集）两个阶段。为避免重复计算，每个 token 的 Key / Value 都需缓存在 GPU 显存中，这就是 KV Cache。</p></div>
+<div style="flex-grow:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px">
+<div class="glass" style="padding:32px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:center;gap:18px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(120,160,255,.35),rgba(120,160,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 10v4M11 10v4M15 10v4M3 9h-1M3 15h-1M22 9h-1M22 15h-1"></path></svg></div><span style="font-size:30px;font-weight:700">KV Cache 显存巨大</span></div>
+<div style="display:flex;align-items:baseline;gap:12px"><span class="sora" style="font-size:52px;font-weight:700;color:#2A4FB8;letter-spacing:-.02em">800 KB</span><span style="font-size:18px;color:#5F6E87">OPT-13B 每 token</span></div>
+<p style="margin:0;font-size:21px;line-height:1.7;color:#3F4E6A;text-wrap:pretty">KV Cache 随序列长度与并发数线性增长。单个 2048 token 的请求即可占用约 1.6 GB 显存，模型权重之外的显存很快被耗尽，直接限制了可同时处理的请求数。</p>
+</div>
+<div class="glass" style="padding:32px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:center;gap:18px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(140,190,255,.35),rgba(140,190,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="4" rx="1.5"></rect><rect x="14" y="11" width="7" height="10" rx="1.5" stroke-dasharray="2 2"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg></div><span style="font-size:30px;font-weight:700">碎片化与过度预留</span></div>
+<div style="display:flex;align-items:baseline;gap:12px"><span class="sora" style="font-size:52px;font-weight:700;color:#2A4FB8;letter-spacing:-.02em">20–38%</span><span style="font-size:18px;color:#5F6E87">显存被有效利用</span></div>
+<p style="margin:0;font-size:21px;line-height:1.7;color:#3F4E6A;text-wrap:pretty">传统系统按最大长度为每个请求预分配连续显存，产生预留浪费、内部碎片与外部碎片。论文实测现有系统中仅 20.4%–38.2% 的 KV Cache 空间存放了真实 token。</p>
+</div>
+<div class="glass" style="padding:32px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:center;gap:18px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(110,210,235,.35),rgba(110,210,235,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18a8 8 0 1 1 16 0"></path><path d="M12 18l4-6"></path><circle cx="12" cy="18" r="1.2"></circle></svg></div><span style="font-size:30px;font-weight:700">Decode 访存受限</span></div>
+<div style="display:flex;align-items:baseline;gap:12px"><span class="sora" style="font-size:52px;font-weight:700;color:#2A4FB8;letter-spacing:-.02em">Batch ↑</span><span style="font-size:18px;color:#5F6E87">吞吐的关键</span></div>
+<p style="margin:0;font-size:21px;line-height:1.7;color:#3F4E6A;text-wrap:pretty">Decode 阶段 GPU 算力利用率低，只有增大批处理规模才能摊薄权重读取成本。但批大小又受限于 KV Cache 显存，形成「显存 → 批大小 → 吞吐」的连锁瓶颈。</p>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(80,110,170,.16);padding-top:18px">
+<span style="font-size:15px;color:#5F6E87">数据来源：Kwon et al., Efficient Memory Management for LLM Serving with PagedAttention, SOSP 2023</span>
+<span class="sora" style="font-size:15px;color:#5F6E87;letter-spacing:.08em">EASY · FAST · CHEAP LLM SERVING</span>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:-200px;top:-200px;width:720px;height:720px;background:radial-gradient(circle,rgba(140,190,255,0.45) 0%,rgba(140,190,255,0) 68%)"></div><div class="orb" style="left:1250px;top:500px;width:780px;height:780px;background:radial-gradient(circle,rgba(120,160,255,0.45) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:1500px;top:-150px;width:460px;height:460px;background:radial-gradient(circle,rgba(120,215,180,0.4) 0%,rgba(120,215,180,0) 68%)"></div><svg width="480" height="480" viewBox="0 0 500 500" style="position:absolute;left:1480px;top:650px;transform:rotate(-20deg);opacity:0.35;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="go1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(140,190,255)"></stop><stop offset="1" stop-color="rgb(110,210,235)" stop-opacity=".25"></stop></linearGradient></defs><path d="M421,300Q398,370,331,402Q264,434,190,420Q116,406,86,334Q56,262,95,196Q134,130,206,96Q278,62,346,104Q414,146,429,223Q444,300,421,300Z" fill="url(#go1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">02 · OVERVIEW</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">04<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">02 · OVERVIEW</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">vLLM：高吞吐、显存高效的 LLM 推理与服务引擎</h2></div>
+<div style="flex-grow:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px">
+<div style="display:flex;flex-direction:column;gap:26px">
+<div class="glass" style="padding:34px 38px;display:flex;flex-direction:column;gap:20px">
+<p style="margin:0;font-size:23px;line-height:1.75;color:#2E3D59;text-wrap:pretty">vLLM 最初由 <b>UC Berkeley Sky Computing Lab</b> 开发，以 <b>PagedAttention</b> 为核心，将 KV Cache 的显存浪费降至 4% 以内，显著提升批处理规模与服务吞吐。项目以 <b>Apache-2.0</b> 协议开源，已成为学术研究与工业部署中最常用的开源推理引擎之一。</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px"><span style="padding:8px 18px;border-radius:999px;background:rgba(120,160,255,.16);border:1px solid rgba(120,160,255,.35);font-size:18px;color:#26375A;font-weight:500">高吞吐</span><span style="padding:8px 18px;border-radius:999px;background:rgba(140,190,255,.16);border:1px solid rgba(140,190,255,.35);font-size:18px;color:#26375A;font-weight:500">显存高效</span><span style="padding:8px 18px;border-radius:999px;background:rgba(110,210,235,.16);border:1px solid rgba(110,210,235,.35);font-size:18px;color:#26375A;font-weight:500">OpenAI 兼容 API</span><span style="padding:8px 18px;border-radius:999px;background:rgba(120,215,180,.16);border:1px solid rgba(120,215,180,.35);font-size:18px;color:#26375A;font-weight:500">HuggingFace 模型生态</span><span style="padding:8px 18px;border-radius:999px;background:rgba(255,220,130,.16);border:1px solid rgba(255,220,130,.35);font-size:18px;color:#26375A;font-weight:500">多硬件后端</span></div>
+</div>
+<div style="display:flex;gap:22px"><div class="glass" style="padding:28px 30px;display:flex;flex-direction:column;gap:10px;flex-grow:1;position:relative;overflow:hidden">
+<div style="position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(120,160,255,.5),rgba(120,160,255,0) 70%)"></div>
+<div style="display:flex;align-items:baseline;gap:6px"><span class="sora grad" style="font-size:68px;font-weight:700;line-height:1;letter-spacing:-.03em">&lt;4</span><span class="sora" style="font-size:26px;font-weight:600;color:#2A4FB8">%</span></div>
+<span style="font-size:19px;color:#43526B;line-height:1.5">KV Cache 显存浪费</span></div><div class="glass" style="padding:28px 30px;display:flex;flex-direction:column;gap:10px;flex-grow:1;position:relative;overflow:hidden">
+<div style="position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(140,190,255,.5),rgba(140,190,255,0) 70%)"></div>
+<div style="display:flex;align-items:baseline;gap:6px"><span class="sora grad" style="font-size:68px;font-weight:700;line-height:1;letter-spacing:-.03em">24</span><span class="sora" style="font-size:26px;font-weight:600;color:#2A4FB8">×</span></div>
+<span style="font-size:19px;color:#43526B;line-height:1.5">吞吐提升（最高，对比 HF Transformers）</span></div><div class="glass" style="padding:28px 30px;display:flex;flex-direction:column;gap:10px;flex-grow:1;position:relative;overflow:hidden">
+<div style="position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(110,210,235,.5),rgba(110,210,235,0) 70%)"></div>
+<div style="display:flex;align-items:baseline;gap:6px"><span class="sora grad" style="font-size:68px;font-weight:700;line-height:1;letter-spacing:-.03em">3.5</span><span class="sora" style="font-size:26px;font-weight:600;color:#2A4FB8">×</span></div>
+<span style="font-size:19px;color:#43526B;line-height:1.5">吞吐提升（最高，对比 TGI）</span></div></div>
+</div>
+<div class="glass" style="padding:36px 38px;display:flex;flex-direction:column;gap:18px">
+<span class="mono" style="font-size:16px;letter-spacing:.2em;color:#5F6E87">MILESTONES · 发展历程</span>
+<div style="display:flex;flex-direction:column"><div style="display:flex;gap:22px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:0;width:22px;flex-shrink:0"><div style="width:18px;height:18px;border-radius:50%;background:rgb(120,160,255);box-shadow:0 0 0 6px rgba(120,160,255,.22);margin-top:8px"></div><div style="flex-grow:1;width:2px;background:linear-gradient(rgba(120,160,255,.6),rgba(120,160,255,0))"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;padding-bottom:18px"><div style="display:flex;align-items:baseline;gap:14px"><span class="sora" style="font-size:24px;font-weight:700;color:#2A4FB8">2023.06</span><span style="font-size:24px;font-weight:700">开源发布</span></div><span style="font-size:20px;line-height:1.6;color:#43526B">伯克利团队发布 vLLM 与 PagedAttention 技术博客</span></div>
+</div><div style="display:flex;gap:22px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:0;width:22px;flex-shrink:0"><div style="width:18px;height:18px;border-radius:50%;background:rgb(140,190,255);box-shadow:0 0 0 6px rgba(140,190,255,.22);margin-top:8px"></div><div style="flex-grow:1;width:2px;background:linear-gradient(rgba(140,190,255,.6),rgba(140,190,255,0))"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;padding-bottom:18px"><div style="display:flex;align-items:baseline;gap:14px"><span class="sora" style="font-size:24px;font-weight:700;color:#2A4FB8">2023.10</span><span style="font-size:24px;font-weight:700">SOSP 2023</span></div><span style="font-size:20px;line-height:1.6;color:#43526B">论文 Efficient Memory Management for LLM Serving with PagedAttention 发表</span></div>
+</div><div style="display:flex;gap:22px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:0;width:22px;flex-shrink:0"><div style="width:18px;height:18px;border-radius:50%;background:rgb(110,210,235);box-shadow:0 0 0 6px rgba(110,210,235,.22);margin-top:8px"></div><div style="flex-grow:1;width:2px;background:linear-gradient(rgba(110,210,235,.6),rgba(110,210,235,0))"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;padding-bottom:18px"><div style="display:flex;align-items:baseline;gap:14px"><span class="sora" style="font-size:24px;font-weight:700;color:#2A4FB8">2024</span><span style="font-size:24px;font-weight:700">能力扩展</span></div><span style="font-size:20px;line-height:1.6;color:#43526B">前缀缓存、推测解码、Chunked Prefill、多模态、多硬件后端相继落地</span></div>
+</div><div style="display:flex;gap:22px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:0;width:22px;flex-shrink:0"><div style="width:18px;height:18px;border-radius:50%;background:rgb(120,215,180);box-shadow:0 0 0 6px rgba(120,215,180,.22);margin-top:8px"></div><div style="flex-grow:1;width:2px;background:linear-gradient(rgba(120,215,180,.6),rgba(120,215,180,0))"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;padding-bottom:18px"><div style="display:flex;align-items:baseline;gap:14px"><span class="sora" style="font-size:24px;font-weight:700;color:#2A4FB8">2025</span><span style="font-size:24px;font-weight:700">V1 引擎 · 基金会</span></div><span style="font-size:20px;line-height:1.6;color:#43526B">核心引擎重构为 V1 架构；成为 PyTorch Foundation 托管项目</span></div>
+</div></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(80,110,170,.16);padding-top:18px">
+<span style="font-size:15px;color:#5F6E87">性能数据来源：vLLM 官方博客（2023.06），测试条件为 LLaMA-7B / 13B，实际表现依硬件与负载而异</span>
+<span class="sora" style="font-size:15px;color:#5F6E87;letter-spacing:.08em">EASY · FAST · CHEAP LLM SERVING</span>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:1100px;top:-300px;width:800px;height:800px;background:radial-gradient(circle,rgba(110,210,235,0.4) 0%,rgba(110,210,235,0) 68%)"></div><div class="orb" style="left:-200px;top:300px;width:700px;height:700px;background:radial-gradient(circle,rgba(120,160,255,0.4) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:1400px;top:700px;width:560px;height:560px;background:radial-gradient(circle,rgba(140,190,255,0.4) 0%,rgba(140,190,255,0) 68%)"></div><svg width="440" height="440" viewBox="0 0 500 500" style="position:absolute;left:1560px;top:-80px;transform:rotate(40deg);opacity:0.35;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="gp1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(120,215,180)"></stop><stop offset="1" stop-color="rgb(110,210,235)" stop-opacity=".25"></stop></linearGradient></defs><path d="M398,318Q386,386,318,418Q250,450,176,428Q102,406,78,331Q54,256,97,186Q140,116,221,84Q302,52,356,116Q410,180,410,249Q410,318,398,318Z" fill="url(#gp1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">03 · PAGEDATTENTION</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">05<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">03 · PAGEDATTENTION</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">PagedAttention：把操作系统的「分页」带入 KV Cache</h2><p style="margin:0;font-size:24px;line-height:1.6;color:#4A5873;max-width:1400px;text-wrap:pretty">借鉴虚拟内存与分页机制：请求的 KV Cache 被切分为固定大小的块（Block），逻辑上连续、物理上可以离散存放，由块表（Block Table）完成映射。</p></div>
+<div class="glass" style="padding:24px 36px;display:flex;align-items:center;gap:26px">
+<div style="flex:1.25;display:flex;flex-direction:column;gap:14px"><span style="font-size:20px;font-weight:700">逻辑 KV 块 · 请求 A</span>
+<div style="display:flex;flex-direction:column;gap:8px"><span class="mono" style="font-size:14px;color:#5F6E87;letter-spacing:.12em">LOGICAL BLOCK 0</span><div style="display:flex;gap:8px"><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">Four</div><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">score</div><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">and</div><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">seven</div></div></div><div style="display:flex;flex-direction:column;gap:8px"><span class="mono" style="font-size:14px;color:#5F6E87;letter-spacing:.12em">LOGICAL BLOCK 1</span><div style="display:flex;gap:8px"><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">years</div><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">ago</div><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">our</div><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">fathers</div></div></div><div style="display:flex;flex-direction:column;gap:8px"><span class="mono" style="font-size:14px;color:#5F6E87;letter-spacing:.12em">LOGICAL BLOCK 2</span><div style="display:flex;gap:8px"><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">brought</div><div style="flex:1;height:46px;border-radius:12px;background:rgba(255,255,255,.85);border:1px solid rgba(120,160,255,.45);display:flex;align-items:center;justify-content:center;font-size:17px;color:#26375A" class="sora">forth</div><div style="flex:1;height:46px;border-radius:12px;border:1.5px dashed rgba(90,120,190,.35)"></div><div style="flex:1;height:46px;border-radius:12px;border:1.5px dashed rgba(90,120,190,.35)"></div></div></div></div>
+<svg width="54" height="24" viewBox="0 0 54 24" aria-hidden="true"><path d="M2 12h46M40 4l8 8-8 8" fill="none" stroke="#6E8FD8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div style="flex:.8;display:flex;flex-direction:column;gap:6px"><span style="font-size:20px;font-weight:700;margin-bottom:8px">块表 Block Table</span>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding-bottom:6px"><span style="font-size:15px;color:#5F6E87">逻辑块</span><span style="font-size:15px;color:#5F6E87">物理块</span><span style="font-size:15px;color:#5F6E87">已填充</span></div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:10px 0;border-top:1px solid rgba(80,110,170,.14)"><span class="sora" style="font-size:20px">0</span><span class="sora" style="font-size:20px;color:#2A4FB8;font-weight:600">7</span><span class="sora" style="font-size:20px">4 / 4</span></div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:10px 0;border-top:1px solid rgba(80,110,170,.14)"><span class="sora" style="font-size:20px">1</span><span class="sora" style="font-size:20px;color:#2A4FB8;font-weight:600">1</span><span class="sora" style="font-size:20px">4 / 4</span></div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:10px 0;border-top:1px solid rgba(80,110,170,.14)"><span class="sora" style="font-size:20px">2</span><span class="sora" style="font-size:20px;color:#2A4FB8;font-weight:600">3</span><span class="sora" style="font-size:20px">2 / 4</span></div></div>
+<svg width="54" height="24" viewBox="0 0 54 24" aria-hidden="true"><path d="M2 12h46M40 4l8 8-8 8" fill="none" stroke="#6E8FD8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div style="flex:1.3;display:flex;flex-direction:column;gap:14px"><span style="font-size:20px;font-weight:700">GPU 物理 KV 块</span><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px"><div style="height:78px;border-radius:16px;border:1.5px dashed rgba(90,120,190,.35);display:flex;align-items:center;justify-content:center"><span class="mono" style="font-size:13px;color:#6B7A93">Block 0 · 空闲</span></div><div style="height:78px;border-radius:16px;background:linear-gradient(140deg,rgba(120,160,255,.55),rgba(120,160,255,.18));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="mono" style="font-size:13px;color:#34445F">Block 1</span><span style="font-size:16px;font-weight:600;color:#142440">请求 A · B1</span></div><div style="height:78px;border-radius:16px;background:linear-gradient(140deg,rgba(110,210,235,.55),rgba(110,210,235,.18));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="mono" style="font-size:13px;color:#34445F">Block 2</span><span style="font-size:16px;font-weight:600;color:#142440">请求 B · C0</span></div><div style="height:78px;border-radius:16px;background:linear-gradient(140deg,rgba(120,160,255,.55),rgba(120,160,255,.18));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="mono" style="font-size:13px;color:#34445F">Block 3</span><span style="font-size:16px;font-weight:600;color:#142440">请求 A · B2</span></div><div style="height:78px;border-radius:16px;border:1.5px dashed rgba(90,120,190,.35);display:flex;align-items:center;justify-content:center"><span class="mono" style="font-size:13px;color:#6B7A93">Block 4 · 空闲</span></div><div style="height:78px;border-radius:16px;background:linear-gradient(140deg,rgba(110,210,235,.55),rgba(110,210,235,.18));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="mono" style="font-size:13px;color:#34445F">Block 5</span><span style="font-size:16px;font-weight:600;color:#142440">请求 B · C1</span></div><div style="height:78px;border-radius:16px;border:1.5px dashed rgba(90,120,190,.35);display:flex;align-items:center;justify-content:center"><span class="mono" style="font-size:13px;color:#6B7A93">Block 6 · 空闲</span></div><div style="height:78px;border-radius:16px;background:linear-gradient(140deg,rgba(120,160,255,.55),rgba(120,160,255,.18));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span class="mono" style="font-size:13px;color:#34445F">Block 7</span><span style="font-size:16px;font-weight:600;color:#142440">请求 A · B0</span></div></div></div>
+</div>
+<div style="flex-grow:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 56px;align-content:start">
+<div style="display:flex;gap:16px"><div style="width:12px;height:12px;border-radius:4px;transform:rotate(45deg);background:rgb(120,160,255);margin-top:12px;flex-shrink:0"></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:23px;font-weight:700">按需分配，近乎零浪费</span><span style="font-size:20px;line-height:1.65;color:#43526B;text-wrap:pretty">块在生成过程中按需申请（默认每块 16 个 token），浪费仅出现在每个请求的最后一个块，KV Cache 显存浪费低于 4%。</span></div></div>
+<div style="display:flex;gap:16px"><div style="width:12px;height:12px;border-radius:4px;transform:rotate(45deg);background:rgb(140,190,255);margin-top:12px;flex-shrink:0"></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:23px;font-weight:700">消除外部碎片</span><span style="font-size:20px;line-height:1.65;color:#43526B;text-wrap:pretty">所有块大小一致，任意空闲块都可被任意请求使用，无需连续显存，从而容纳更大的批处理规模。</span></div></div>
+<div style="display:flex;gap:16px"><div style="width:12px;height:12px;border-radius:4px;transform:rotate(45deg);background:rgb(110,210,235);margin-top:12px;flex-shrink:0"></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:23px;font-weight:700">块级共享 + 写时复制</span><span style="font-size:20px;line-height:1.65;color:#43526B;text-wrap:pretty">并行采样、Beam Search 可共享 prompt 对应的物理块，通过引用计数与 Copy-on-Write 管理；Beam Search 场景显存最高节省约 55%。</span></div></div>
+<div style="display:flex;gap:16px"><div style="width:12px;height:12px;border-radius:4px;transform:rotate(45deg);background:rgb(120,215,180);margin-top:12px;flex-shrink:0"></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:23px;font-weight:700">定制 Attention Kernel</span><span style="font-size:20px;line-height:1.65;color:#43526B;text-wrap:pretty">Attention 计算时按块表逐块读取离散的 K / V，将分页管理与高效 GPU Kernel 结合。</span></div></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(80,110,170,.16);padding-top:18px">
+<span style="font-size:15px;color:#5F6E87">示意图参考 Kwon et al., SOSP 2023 · 示例中块大小为 4 以便展示</span>
+<span class="sora" style="font-size:15px;color:#5F6E87;letter-spacing:.08em">EASY · FAST · CHEAP LLM SERVING</span>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:-240px;top:-200px;width:720px;height:720px;background:radial-gradient(circle,rgba(120,215,180,0.4) 0%,rgba(120,215,180,0) 68%)"></div><div class="orb" style="left:1250px;top:-250px;width:760px;height:760px;background:radial-gradient(circle,rgba(120,160,255,0.45) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:1100px;top:650px;width:640px;height:640px;background:radial-gradient(circle,rgba(255,220,130,0.35) 0%,rgba(255,220,130,0) 68%)"></div><svg width="460" height="460" viewBox="0 0 500 500" style="position:absolute;left:-60px;top:640px;transform:rotate(-10deg);opacity:0.3;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="gs1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(120,160,255)"></stop><stop offset="1" stop-color="rgb(140,190,255)" stop-opacity=".25"></stop></linearGradient></defs><path d="M421,300Q398,370,331,402Q264,434,190,420Q116,406,86,334Q56,262,95,196Q134,130,206,96Q278,62,346,104Q414,146,429,223Q444,300,421,300Z" fill="url(#gs1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">04 · SCHEDULING</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">06<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">04 · SCHEDULING</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">调度：连续批处理让 GPU 始终满载</h2></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px">
+<div class="glass" style="padding:28px 32px;display:flex;flex-direction:column;gap:14px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:24px;font-weight:700">静态批处理 Static Batching</span><span class="mono" style="font-size:14px;color:#5F6E87">TIME →</span></div><div style="display:flex;align-items:center;gap:14px"><span class="mono" style="font-size:14px;color:#5F6E87;width:56px;flex-shrink:0">SLOT 1</span><div style="display:flex;gap:6px"><div style="width:300px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(120,160,255,.6),rgba(120,160,255,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R1</span></div><div style="width:260px;height:40px;border-radius:10px;border:1.5px dashed rgba(90,120,190,.3);flex-shrink:0"></div></div></div><div style="display:flex;align-items:center;gap:14px"><span class="mono" style="font-size:14px;color:#5F6E87;width:56px;flex-shrink:0">SLOT 2</span><div style="display:flex;gap:6px"><div style="width:560px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(140,190,255,.6),rgba(140,190,255,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R2</span></div></div></div><div style="display:flex;align-items:center;gap:14px"><span class="mono" style="font-size:14px;color:#5F6E87;width:56px;flex-shrink:0">SLOT 3</span><div style="display:flex;gap:6px"><div style="width:180px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(110,210,235,.6),rgba(110,210,235,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R3</span></div><div style="width:380px;height:40px;border-radius:10px;border:1.5px dashed rgba(90,120,190,.3);flex-shrink:0"></div></div></div><div style="display:flex;gap:14px"><span style="width:56px"></span><span style="font-size:16px;color:#C2545A">空闲槽位须等待整批结束，R4、R5 排队中</span></div></div>
+<div class="glass" style="padding:28px 32px;display:flex;flex-direction:column;gap:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 24px 60px -24px rgba(90,130,240,.45)"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:24px;font-weight:700">连续批处理 Continuous Batching</span><span class="mono" style="font-size:14px;color:#5F6E87">TIME →</span></div><div style="display:flex;align-items:center;gap:14px"><span class="mono" style="font-size:14px;color:#5F6E87;width:56px;flex-shrink:0">SLOT 1</span><div style="display:flex;gap:6px"><div style="width:300px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(120,160,255,.6),rgba(120,160,255,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R1</span></div><div style="width:254px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(255,220,130,.6),rgba(255,220,130,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R5</span></div></div></div><div style="display:flex;align-items:center;gap:14px"><span class="mono" style="font-size:14px;color:#5F6E87;width:56px;flex-shrink:0">SLOT 2</span><div style="display:flex;gap:6px"><div style="width:560px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(140,190,255,.6),rgba(140,190,255,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R2</span></div></div></div><div style="display:flex;align-items:center;gap:14px"><span class="mono" style="font-size:14px;color:#5F6E87;width:56px;flex-shrink:0">SLOT 3</span><div style="display:flex;gap:6px"><div style="width:180px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(110,210,235,.6),rgba(110,210,235,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R3</span></div><div style="width:374px;height:40px;border-radius:10px;background:linear-gradient(140deg,rgba(120,215,180,.6),rgba(120,215,180,.25));border:1px solid rgba(255,255,255,.95);flex-shrink:0;display:flex;align-items:center;padding-left:12px;box-sizing:border-box"><span class="mono" style="font-size:14px;color:#26375A">R4</span></div></div></div><div style="display:flex;gap:14px"><span style="width:56px"></span><span style="font-size:16px;color:#2F8C6A">请求完成即释放，新请求在下一次迭代立即加入</span></div></div>
+</div>
+<div style="flex-grow:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px">
+<div class="glass" style="padding:24px 26px;display:flex;gap:18px"><div style="width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(120,160,255,.35),rgba(120,160,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg></div><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:23px;font-weight:700">迭代级调度</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">以每一次前向迭代为调度粒度（源自 Orca 的思想），请求可随时加入或退出批次，避免短请求被长请求拖累。</span></div></div>
+<div class="glass" style="padding:24px 26px;display:flex;gap:18px"><div style="width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(250,140,140,.35),rgba(250,140,140,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 10v4M11 10v4M15 10v4M3 9h-1M3 15h-1M22 9h-1M22 15h-1"></path></svg></div><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:23px;font-weight:700">显存不足时的抢占</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">KV 块耗尽时按先来先服务原则抢占最晚到达的请求：换出（Swap）到 CPU 内存，或释放后重新计算（Recompute）。</span></div></div>
+<div class="glass" style="padding:24px 26px;display:flex;gap:18px"><div style="width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(140,190,255,.35),rgba(140,190,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18a8 8 0 1 1 16 0"></path><path d="M12 18l4-6"></path><circle cx="12" cy="18" r="1.2"></circle></svg></div><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:23px;font-weight:700">Chunked Prefill</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">将长 prompt 切成小块，与 decode 请求混合在同一批中执行，平衡首 token 延迟与生成速度，提升 GPU 利用率。</span></div></div>
+<div class="glass" style="padding:24px 26px;display:flex;gap:18px"><div style="width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(110,210,235,.35),rgba(110,210,235,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"></path></svg></div><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:23px;font-weight:700">自动前缀缓存 APC</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">以块内容哈希识别相同前缀（系统提示词、多轮对话、few-shot 样例），命中后直接复用 KV 块、跳过重复 prefill。</span></div></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(80,110,170,.16);padding-top:18px">
+<span style="font-size:15px;color:#5F6E87">调度器在每一步决定：运行哪些请求、每个请求处理多少 token、需要分配或回收哪些 KV 块</span>
+<span class="sora" style="font-size:15px;color:#5F6E87;letter-spacing:.08em">EASY · FAST · CHEAP LLM SERVING</span>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:-200px;top:-250px;width:700px;height:700px;background:radial-gradient(circle,rgba(110,210,235,0.4) 0%,rgba(110,210,235,0) 68%)"></div><div class="orb" style="left:700px;top:600px;width:700px;height:700px;background:radial-gradient(circle,rgba(120,160,255,0.4) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:1400px;top:-100px;width:700px;height:700px;background:radial-gradient(circle,rgba(140,190,255,0.4) 0%,rgba(140,190,255,0) 68%)"></div><svg width="420" height="420" viewBox="0 0 500 500" style="position:absolute;left:1600px;top:700px;transform:rotate(15deg);opacity:0.3;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="gr1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(255,220,130)"></stop><stop offset="1" stop-color="rgb(250,140,140)" stop-opacity=".25"></stop></linearGradient></defs><path d="M398,318Q386,386,318,418Q250,450,176,428Q102,406,78,331Q54,256,97,186Q140,116,221,84Q302,52,356,116Q410,180,410,249Q410,318,398,318Z" fill="url(#gr1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">05 · ARCHITECTURE</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">07<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">05 · ARCHITECTURE</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">系统架构：V1 引擎的分层设计</h2></div>
+<div style="flex-grow:1;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:32px">
+<div class="glass" style="padding:30px 34px;display:flex;flex-direction:column;gap:8px;justify-content:center"><div style="display:flex;align-items:stretch;gap:18px"><div style="width:130px;flex-shrink:0;display:flex;align-items:center"><span class="mono" style="font-size:14px;letter-spacing:.14em;color:#5F6E87;line-height:1.5">ENTRY<br/>入口层</span></div><div style="flex:1;display:flex;gap:14px"><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(120,160,255,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">OpenAI 兼容 API Server</span><span style="font-size:16px;color:#43526B;line-height:1.5">vllm serve · /v1/chat/completions</span></div><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(120,160,255,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">离线推理 LLM 类</span><span style="font-size:16px;color:#43526B;line-height:1.5">llm.generate() / llm.chat()</span></div></div></div><div style="display:flex;padding-left:148px"><svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 2v16M5 11l7 7 7-7" fill="none" stroke="#8AA3DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div style="display:flex;align-items:stretch;gap:18px"><div style="width:130px;flex-shrink:0;display:flex;align-items:center"><span class="mono" style="font-size:14px;letter-spacing:.14em;color:#5F6E87;line-height:1.5">FRONTEND<br/>前端进程</span></div><div style="flex:1;display:flex;gap:14px"><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(140,190,255,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">AsyncLLM / 输入处理</span><span style="font-size:16px;color:#43526B;line-height:1.5">分词、多模态预处理、请求管理与流式输出</span></div></div></div><div style="display:flex;padding-left:148px"><svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 2v16M5 11l7 7 7-7" fill="none" stroke="#8AA3DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div style="display:flex;align-items:stretch;gap:18px"><div style="width:130px;flex-shrink:0;display:flex;align-items:center"><span class="mono" style="font-size:14px;letter-spacing:.14em;color:#5F6E87;line-height:1.5">ENGINE CORE<br/>独立进程</span></div><div style="flex:1;display:flex;gap:14px"><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(110,210,235,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">Scheduler 调度器</span><span style="font-size:16px;color:#43526B;line-height:1.5">统一 token 预算，不再区分 prefill / decode</span></div><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(110,210,235,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">KV Cache Manager</span><span style="font-size:16px;color:#43526B;line-height:1.5">块分配、回收与前缀缓存</span></div></div></div><div style="display:flex;padding-left:148px"><svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 2v16M5 11l7 7 7-7" fill="none" stroke="#8AA3DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div style="display:flex;align-items:stretch;gap:18px"><div style="width:130px;flex-shrink:0;display:flex;align-items:center"><span class="mono" style="font-size:14px;letter-spacing:.14em;color:#5F6E87;line-height:1.5">EXECUTOR<br/>执行层</span></div><div style="flex:1;display:flex;gap:14px"><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(120,215,180,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">Worker · GPU 0</span><span style="font-size:16px;color:#43526B;line-height:1.5">ModelRunner · Attention Backend</span></div><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(120,215,180,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">Worker · GPU 1</span><span style="font-size:16px;color:#43526B;line-height:1.5">ModelRunner · Attention Backend</span></div><div style="flex:1;padding:18px 20px;border-radius:18px;background:linear-gradient(140deg,rgba(120,215,180,.32),rgba(255,255,255,.55));border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:4px;"><span style="font-size:21px;font-weight:700">Worker · GPU N</span><span style="font-size:16px;color:#43526B;line-height:1.5">TP / PP / DP / EP 并行</span></div></div></div></div>
+<div class="glass" style="padding:30px 34px;display:flex;flex-direction:column;gap:4px"><span class="mono" style="font-size:16px;letter-spacing:.2em;color:#5F6E87;padding-bottom:10px">V1 ENGINE · 设计要点</span><div style="display:flex;flex-direction:column;gap:6px;padding:18px 0;border-top:1px solid rgba(80,110,170,.14)"><div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:rgb(120,160,255)"></span><span style="font-size:22px;font-weight:700">多进程解耦</span></div><span style="font-size:19px;line-height:1.6;color:#43526B;padding-left:22px">API 处理、分词与引擎核心运行在不同进程，CPU 开销与 GPU 计算重叠。</span></div><div style="display:flex;flex-direction:column;gap:6px;padding:18px 0;border-top:1px solid rgba(80,110,170,.14)"><div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:rgb(140,190,255)"></span><span style="font-size:22px;font-weight:700">统一调度器</span></div><span style="font-size:19px;line-height:1.6;color:#43526B;padding-left:22px">以「每个请求本步处理多少 token」统一表达 prefill、decode 与 chunked prefill。</span></div><div style="display:flex;flex-direction:column;gap:6px;padding:18px 0;border-top:1px solid rgba(80,110,170,.14)"><div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:rgb(110,210,235)"></span><span style="font-size:22px;font-weight:700">零开销前缀缓存</span></div><span style="font-size:19px;line-height:1.6;color:#43526B;padding-left:22px">前缀缓存在缓存命中率为 0 时几乎不引入额外开销，可默认开启。</span></div><div style="display:flex;flex-direction:column;gap:6px;padding:18px 0;border-top:1px solid rgba(80,110,170,.14)"><div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:rgb(120,215,180)"></span><span style="font-size:22px;font-weight:700">编译与图优化</span></div><span style="font-size:19px;line-height:1.6;color:#43526B;padding-left:22px">torch.compile 与分段 CUDA Graph 结合，降低 kernel 启动开销。</span></div></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(80,110,170,.16);padding-top:18px">
+<span style="font-size:15px;color:#5F6E87">参考：vLLM V1 技术博客（2025.01）与官方文档 docs.vllm.ai · 模块名称以实际版本为准</span>
+<span class="sora" style="font-size:15px;color:#5F6E87;letter-spacing:.08em">EASY · FAST · CHEAP LLM SERVING</span>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:-200px;top:400px;width:700px;height:700px;background:radial-gradient(circle,rgba(140,190,255,0.4) 0%,rgba(140,190,255,0) 68%)"></div><div class="orb" style="left:1200px;top:-300px;width:800px;height:800px;background:radial-gradient(circle,rgba(110,210,235,0.4) 0%,rgba(110,210,235,0) 68%)"></div><div class="orb" style="left:1500px;top:600px;width:600px;height:600px;background:radial-gradient(circle,rgba(120,215,180,0.4) 0%,rgba(120,215,180,0) 68%)"></div><div class="orb" style="left:600px;top:-200px;width:400px;height:400px;background:radial-gradient(circle,rgba(255,220,130,0.35) 0%,rgba(255,220,130,0) 68%)"></div>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">06 · FEATURES</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">08<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:40px"><div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">06 · FEATURES</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">功能矩阵：从单卡实验到集群级生产部署</h2></div>
+<div style="display:flex;gap:12px;flex-shrink:0;padding-bottom:8px"><span style="padding:8px 18px;border-radius:999px;background:rgba(120,160,255,.16);border:1px solid rgba(120,160,255,.35);font-size:18px;color:#26375A;font-weight:500">Llama</span><span style="padding:8px 18px;border-radius:999px;background:rgba(140,190,255,.16);border:1px solid rgba(140,190,255,.35);font-size:18px;color:#26375A;font-weight:500">Qwen</span><span style="padding:8px 18px;border-radius:999px;background:rgba(110,210,235,.16);border:1px solid rgba(110,210,235,.35);font-size:18px;color:#26375A;font-weight:500">DeepSeek</span><span style="padding:8px 18px;border-radius:999px;background:rgba(120,215,180,.16);border:1px solid rgba(120,215,180,.35);font-size:18px;color:#26375A;font-weight:500">Mistral</span><span style="padding:8px 18px;border-radius:999px;background:rgba(255,220,130,.16);border:1px solid rgba(255,220,130,.35);font-size:18px;color:#26375A;font-weight:500">Gemma</span></div></div>
+<div style="flex-grow:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px"><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(120,160,255,.35),rgba(120,160,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"></path></svg></div><span style="font-size:25px;font-weight:700">自动前缀缓存</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">复用相同前缀的 KV 块，显著降低多轮对话与长系统提示的首 token 延迟</span></div><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(140,190,255,.35),rgba(140,190,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h9"></path><path d="M11 7l5 5-5 5"></path><path d="M19 5v14"></path></svg></div><span style="font-size:25px;font-weight:700">推测解码</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">支持 n-gram、EAGLE、草稿模型等方案，以小代价预测多个 token 并一次验证</span></div><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(110,210,235,.35),rgba(110,210,235,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"></path></svg></div><span style="font-size:25px;font-weight:700">量化推理</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">支持 GPTQ、AWQ、INT8、FP8 等权重 / 激活量化，以及 FP8 KV Cache</span></div><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(120,215,180,.35),rgba(120,215,180,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="7" height="16" rx="2"></rect><rect x="14" y="4" width="7" height="16" rx="2"></rect><path d="M10 12h4"></path></svg></div><span style="font-size:25px;font-weight:700">分布式并行</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">张量并行、流水线并行、数据并行与专家并行（MoE），支持多机多卡部署</span></div><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(255,220,130,.35),rgba(255,220,130,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M9 11l6-4M9 13l6 4"></path></svg></div><span style="font-size:25px;font-weight:700">Multi-LoRA 服务</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">同一基座模型同时挂载多个 LoRA 适配器，按请求动态选择</span></div><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(250,140,140,.35),rgba(250,140,140,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4c-2 0-3 1-3 3v2c0 1.5-1 3-2 3 1 0 2 1.5 2 3v2c0 2 1 3 3 3"></path><path d="M16 4c2 0 3 1 3 3v2c0 1.5 1 3 2 3-1 0-2 1.5-2 3v2c0 2-1 3-3 3"></path></svg></div><span style="font-size:25px;font-weight:700">结构化输出</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">基于 JSON Schema、正则或语法约束的引导解码，保证输出格式可解析</span></div><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(185,165,250,.35),rgba(185,165,250,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M21 16l-5-5-8 8"></path></svg></div><span style="font-size:25px;font-weight:700">多模态模型</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">支持图像、视频、音频等多模态输入的主流视觉语言模型</span></div><div class="glass" style="padding:28px 28px 26px;display:flex;flex-direction:column;gap:16px"><div style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(120,160,255,.35),rgba(120,160,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"></rect><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"></path></svg></div><span style="font-size:25px;font-weight:700">多硬件后端</span><span style="font-size:19px;line-height:1.65;color:#43526B;text-wrap:pretty">NVIDIA GPU、AMD GPU、Intel CPU / GPU、Google TPU、AWS Neuron 等</span></div></div>
+<div class="glass-soft" style="padding:18px 28px;display:flex;align-items:center;gap:18px"><div style="width:44px;height:44px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,rgba(120,160,255,.35),rgba(120,160,255,.10));border:1px solid rgba(255,255,255,.9);flex-shrink:0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#26407A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17l6-6-6-6"></path><path d="M12 19h8"></path></svg></div><span style="font-size:21px;color:#2E3D59"><b>OpenAI 兼容接口</b>：现有基于 OpenAI SDK 的应用只需修改 <span class="mono" style="color:#2A4FB8">base_url</span> 即可迁移；同时支持流式输出、Embedding 与 Reward 等任务类型。</span></div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:1100px;top:-280px;width:800px;height:800px;background:radial-gradient(circle,rgba(120,160,255,0.45) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:-220px;top:500px;width:700px;height:700px;background:radial-gradient(circle,rgba(120,215,180,0.35) 0%,rgba(120,215,180,0) 68%)"></div><div class="orb" style="left:1450px;top:650px;width:560px;height:560px;background:radial-gradient(circle,rgba(140,190,255,0.45) 0%,rgba(140,190,255,0) 68%)"></div><svg width="420" height="420" viewBox="0 0 500 500" style="position:absolute;left:-80px;top:-100px;transform:rotate(10deg);opacity:0.3;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="gf1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(110,210,235)"></stop><stop offset="1" stop-color="rgb(120,160,255)" stop-opacity=".25"></stop></linearGradient></defs><path d="M398,318Q386,386,318,418Q250,450,176,428Q102,406,78,331Q54,256,97,186Q140,116,221,84Q302,52,356,116Q410,180,410,249Q410,318,398,318Z" fill="url(#gf1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">06 · PERFORMANCE</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">09<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">06 · PERFORMANCE</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">性能表现：显存利用率决定吞吐上限</h2></div>
+<div style="flex-grow:1;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:32px">
+<div class="glass" style="padding:34px 40px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:26px;font-weight:700">KV Cache 显存有效利用率</span><span style="font-size:18px;color:#5F6E87">存放真实 token 状态的显存占比（越高越好）</span></div>
+<div style="flex-grow:1;display:flex;flex-direction:column;justify-content:center;gap:22px"><div style="display:flex;align-items:center;gap:20px"><span style="width:170px;font-size:20px;color:#34445F" class="sora">Orca (Max)</span><div style="flex:1;height:44px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:20.4%;border-radius:14px;background:linear-gradient(90deg,rgba(120,160,255,.35),rgba(120,160,255,.55))"></div></div><span class="sora" style="width:90px;text-align:right;font-size:24px;font-weight:700;color:#142440">20.4%</span></div><div style="display:flex;align-items:center;gap:20px"><span style="width:170px;font-size:20px;color:#34445F" class="sora">Orca (Pow2)</span><div style="flex:1;height:44px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:26.8%;border-radius:14px;background:linear-gradient(90deg,rgba(120,160,255,.35),rgba(120,160,255,.55))"></div></div><span class="sora" style="width:90px;text-align:right;font-size:24px;font-weight:700;color:#142440">26.8%</span></div><div style="display:flex;align-items:center;gap:20px"><span style="width:170px;font-size:20px;color:#34445F" class="sora">Orca (Oracle)</span><div style="flex:1;height:44px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:38.2%;border-radius:14px;background:linear-gradient(90deg,rgba(120,160,255,.35),rgba(120,160,255,.55))"></div></div><span class="sora" style="width:90px;text-align:right;font-size:24px;font-weight:700;color:#142440">38.2%</span></div><div style="display:flex;align-items:center;gap:20px"><span style="width:170px;font-size:20px;color:#142440;font-weight:700" class="sora">vLLM</span><div style="flex:1;height:44px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);position:relative;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:96.3%;border-radius:14px;background:linear-gradient(90deg,#4F86F7,#6FA8FF 60%,#6FD0E6);box-shadow:0 10px 26px -10px rgba(80,140,250,.8)"></div></div><span class="sora" style="width:90px;text-align:right;font-size:24px;font-weight:700;color:#142440">96.3%</span></div></div>
+<p style="margin:0;font-size:19px;line-height:1.65;color:#43526B">传统方案中大量显存用于预留与碎片，vLLM 通过分页管理将有效利用率提升至 <b style="color:#142440">96% 以上</b>，同等显存下可容纳更多并发请求。</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:24px">
+<div class="glass" style="padding:30px 34px;display:flex;flex-direction:column;gap:26px"><span style="font-size:24px;font-weight:700">吞吐提升（vLLM 博客，2023）</span><div style="display:flex;flex-direction:column;gap:12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:21px;font-weight:600">对比 HF Transformers</span><span class="sora" style="font-size:30px;font-weight:700;color:#2A4FB8">14× – 24×</span></div>
+<div style="height:16px;border-radius:999px;background:rgba(120,160,255,.14);position:relative"><div style="position:absolute;top:0;bottom:0;left:53.8%;width:38.5%;border-radius:999px;background:linear-gradient(90deg,rgba(140,190,255,.7),rgb(140,190,255))"></div></div></div><div style="display:flex;flex-direction:column;gap:12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:21px;font-weight:600">对比 HF TGI</span><span class="sora" style="font-size:30px;font-weight:700;color:#2A4FB8">2.2× – 3.5×</span></div>
+<div style="height:16px;border-radius:999px;background:rgba(120,160,255,.14);position:relative"><div style="position:absolute;top:0;bottom:0;left:8.5%;width:5.0%;border-radius:999px;background:linear-gradient(90deg,rgba(110,210,235,.7),rgb(110,210,235))"></div></div></div></div>
+<div class="glass" style="padding:30px 34px;display:flex;flex-direction:column;gap:10px;flex-grow:1"><span style="font-size:24px;font-weight:700">论文结论（SOSP 2023）</span><div style="display:flex;align-items:baseline;gap:10px"><span class="sora grad" style="font-size:64px;font-weight:700;line-height:1.1">2–4×</span></div><span style="font-size:19px;line-height:1.65;color:#43526B">在相同延迟水平下，相比 FasterTransformer 与 Orca 的吞吐提升；序列越长、模型越大、解码算法越复杂，优势越明显。</span></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(80,110,170,.16);padding-top:18px">
+<span style="font-size:15px;color:#5F6E87">数据来源：Kwon et al., SOSP 2023（Fig.2 · OPT-13B）；vLLM 官方博客 2023.06。实际性能取决于硬件、模型与负载</span>
+<span class="sora" style="font-size:15px;color:#5F6E87;letter-spacing:.08em">EASY · FAST · CHEAP LLM SERVING</span>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:-220px;top:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(120,160,255,0.4) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:1300px;top:400px;width:800px;height:800px;background:radial-gradient(circle,rgba(120,215,180,0.35) 0%,rgba(120,215,180,0) 68%)"></div><div class="orb" style="left:800px;top:-300px;width:600px;height:600px;background:radial-gradient(circle,rgba(140,190,255,0.35) 0%,rgba(140,190,255,0) 68%)"></div><svg width="420" height="420" viewBox="0 0 500 500" style="position:absolute;left:1580px;top:-60px;transform:rotate(-25deg);opacity:0.35;filter:blur(1px)" aria-hidden="true"><defs><linearGradient id="gq1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="rgb(110,210,235)"></stop><stop offset="1" stop-color="rgb(140,190,255)" stop-opacity=".25"></stop></linearGradient></defs><path d="M421,300Q398,370,331,402Q264,434,190,420Q116,406,86,334Q56,262,95,196Q134,130,206,96Q278,62,346,104Q414,146,429,223Q444,300,421,300Z" fill="url(#gq1)"></path></svg>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">06 · QUICKSTART</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">10<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">06 · QUICKSTART</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">快速上手：三步部署一个推理服务</h2></div>
+<div style="flex-grow:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:30px">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="glass" style="padding:20px 28px;display:flex;gap:22px;align-items:flex-start">
+<span class="sora" style="width:52px;height:52px;flex-shrink:0;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#142440;background:linear-gradient(140deg,rgba(120,160,255,.5),rgba(120,160,255,.15));border:1px solid rgba(255,255,255,.95)">1</span>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;min-width:0"><span style="font-size:23px;font-weight:700">安装</span>
+<div class="mono" style="font-size:17px;line-height:1.6;padding:12px 16px;border-radius:12px;background:rgba(236,242,255,.8);border:1px solid rgba(120,160,255,.25);color:#1E2F52;white-space:pre-wrap">pip install vllm</div>
+<span style="font-size:17px;color:#5F6E87;line-height:1.5">建议使用独立的 Python 虚拟环境，并确认 CUDA / 驱动版本匹配</span></div></div><div class="glass" style="padding:20px 28px;display:flex;gap:22px;align-items:flex-start">
+<span class="sora" style="width:52px;height:52px;flex-shrink:0;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#142440;background:linear-gradient(140deg,rgba(140,190,255,.5),rgba(140,190,255,.15));border:1px solid rgba(255,255,255,.95)">2</span>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;min-width:0"><span style="font-size:23px;font-weight:700">启动 OpenAI 兼容服务</span>
+<div class="mono" style="font-size:17px;line-height:1.6;padding:12px 16px;border-radius:12px;background:rgba(236,242,255,.8);border:1px solid rgba(120,160,255,.25);color:#1E2F52;white-space:pre-wrap">vllm serve Qwen/Qwen2.5-7B-Instruct \
+  --tensor-parallel-size 2 --max-model-len 8192</div>
+<span style="font-size:17px;color:#5F6E87;line-height:1.5">默认监听 8000 端口，模型可替换为任意受支持的 HuggingFace 模型</span></div></div><div class="glass" style="padding:20px 28px;display:flex;gap:22px;align-items:flex-start">
+<span class="sora" style="width:52px;height:52px;flex-shrink:0;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#142440;background:linear-gradient(140deg,rgba(110,210,235,.5),rgba(110,210,235,.15));border:1px solid rgba(255,255,255,.95)">3</span>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;min-width:0"><span style="font-size:23px;font-weight:700">调用接口</span>
+<div class="mono" style="font-size:17px;line-height:1.6;padding:12px 16px;border-radius:12px;background:rgba(236,242,255,.8);border:1px solid rgba(120,160,255,.25);color:#1E2F52;white-space:pre-wrap">curl localhost:8000/v1/chat/completions \
+  -H &quot;Content-Type: application/json&quot; -d @req.json</div>
+<span style="font-size:17px;color:#5F6E87;line-height:1.5">也可直接使用 OpenAI Python SDK，将 base_url 指向本地服务</span></div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:18px">
+<div class="glass" style="padding:24px 28px;display:flex;flex-direction:column;gap:14px"><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:23px;font-weight:700">离线批量推理 · Python</span><div style="display:flex;gap:8px"><span style="width:12px;height:12px;border-radius:50%;background:#F4A3A3"></span><span style="width:12px;height:12px;border-radius:50%;background:#FFE08A"></span><span style="width:12px;height:12px;border-radius:50%;background:#9FE0C6"></span></div></div>
+<div class="mono" style="font-size:17px;line-height:1.55;padding:14px 20px;border-radius:16px;background:rgba(240,245,255,.85);border:1px solid rgba(120,160,255,.22);color:#1E2F52"><span style="color:#1F5FCF">from</span> vllm <span style="color:#1F5FCF">import</span> LLM, SamplingParams<br/><br/>llm = <span style="color:#2A5BD7">LLM</span>(model=<span style="color:#2F8C6A">"Qwen/Qwen2.5-7B-Instruct"</span>,<br/>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;tensor_parallel_size=<span style="color:#C2545A">1</span>)<br/>params = <span style="color:#2A5BD7">SamplingParams</span>(temperature=<span style="color:#C2545A">0.7</span>,<br/>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;top_p=<span style="color:#C2545A">0.9</span>, max_tokens=<span style="color:#C2545A">256</span>)<br/><br/>outputs = llm.<span style="color:#2A5BD7">generate</span>([<span style="color:#2F8C6A">"简要介绍 PagedAttention"</span>], params)<br/><span style="color:#1F5FCF">for</span> o <span style="color:#1F5FCF">in</span> outputs:<br/>&#160;&#160;&#160;&#160;<span style="color:#2A5BD7">print</span>(o.outputs[<span style="color:#C2545A">0</span>].text)</div></div>
+<div class="glass" style="padding:20px 28px;display:flex;flex-direction:column;flex-grow:1"><span style="font-size:21px;font-weight:700;padding-bottom:6px">常用调优参数</span><div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid rgba(80,110,170,.14)"><span class="mono" style="font-size:17px;color:#2A4FB8">--gpu-memory-utilization</span><span style="font-size:17px;color:#43526B">预留给模型与 KV Cache 的显存比例，默认 0.9</span></div><div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid rgba(80,110,170,.14)"><span class="mono" style="font-size:17px;color:#2A4FB8">--max-model-len</span><span style="font-size:17px;color:#43526B">最大上下文长度，调小可换取更多并发</span></div><div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid rgba(80,110,170,.14)"><span class="mono" style="font-size:17px;color:#2A4FB8">--max-num-seqs</span><span style="font-size:17px;color:#43526B">单步最大并发序列数，影响吞吐与延迟</span></div><div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid rgba(80,110,170,.14)"><span class="mono" style="font-size:17px;color:#2A4FB8">--quantization</span><span style="font-size:17px;color:#43526B">选择量化方案，如 awq、gptq、fp8</span></div></div>
+</div>
+</div>
+</div>
+</div>
+<div style="width:1920px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(160deg,#F8FBFF 0%,#F2F7FE 50%,#F1F8FD 100%)">
+<div class="orb" style="left:1000px;top:-300px;width:900px;height:900px;background:radial-gradient(circle,rgba(120,160,255,0.42) 0%,rgba(120,160,255,0) 68%)"></div><div class="orb" style="left:-220px;top:620px;width:640px;height:640px;background:radial-gradient(circle,rgba(110,210,235,0.26) 0%,rgba(110,210,235,0) 68%)"></div><div class="orb" style="left:1450px;top:600px;width:560px;height:560px;background:radial-gradient(circle,rgba(140,190,255,0.32) 0%,rgba(140,190,255,0) 68%)"></div>
+<div class="dots"></div>
+<div style="position:absolute;inset:0;box-sizing:border-box;padding:56px 112px 44px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="glass-soft" style="display:flex;align-items:center;gap:12px;padding:10px 20px 10px 12px;border-radius:999px">
+<div style="width:26px;height:26px;border-radius:50%;background:conic-gradient(from 200deg,#6E9BFF,#A7CBFF,#7FD6E8,#8FDDBF,#6E9BFF);box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)"></div>
+<span style="font-size:17px;font-weight:500;color:#34445F;letter-spacing:.02em">vLLM · 大模型推理框架介绍</span>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87">SUMMARY</span>
+<span class="sora" style="font-size:20px;font-weight:600;color:#142440">11<span style="color:#8A97AD;font-weight:400"> / 11</span></span>
+</div>
+</div>
+<div style="flex-grow:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:60px;align-items:stretch">
+<div style="display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:10px;height:10px;border-radius:50%;background:#F27C7C;box-shadow:0 0 0 5px rgba(242,124,124,.18)"></span><span class="mono" style="font-size:17px;letter-spacing:.22em;color:#3F6FE0;font-weight:500">SUMMARY · 总结</span></div>
+<h2 style="margin:0;font-size:58px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#142440">三个关键结论</h2></div>
+<div class="glass" style="padding:24px 34px;display:flex;gap:28px;align-items:center;flex-grow:1"><span class="sora" style="font-size:48px;font-weight:300;color:#2A4FB8;line-height:1">01</span><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:28px;font-weight:700">显存是 LLM 推理的第一瓶颈</span><span style="font-size:21px;line-height:1.6;color:#43526B">KV Cache 的管理方式直接决定批大小与吞吐上限。</span></div></div><div class="glass" style="padding:24px 34px;display:flex;gap:28px;align-items:center;flex-grow:1"><span class="sora" style="font-size:48px;font-weight:300;color:#2A4FB8;line-height:1">02</span><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:28px;font-weight:700">PagedAttention 是核心创新</span><span style="font-size:21px;line-height:1.6;color:#43526B">分页式块管理几乎消除碎片，并支持块级共享与写时复制。</span></div></div><div class="glass" style="padding:24px 34px;display:flex;gap:28px;align-items:center;flex-grow:1"><span class="sora" style="font-size:48px;font-weight:300;color:#2A4FB8;line-height:1">03</span><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:28px;font-weight:700">系统级协同带来工程红利</span><span style="font-size:21px;line-height:1.6;color:#43526B">连续批处理、前缀缓存、推测解码与量化共同构成完整的高性能服务栈。</span></div></div>
+</div>
+<div style="display:flex;flex-direction:column;justify-content:space-between;gap:24px">
+<div style="display:flex;align-items:center;gap:36px;padding-top:70px">
+<div style="display:flex;flex-direction:column;gap:14px;flex-grow:1">
+<span class="sora grad" style="font-size:120px;font-weight:800;line-height:1;letter-spacing:-.04em">Thanks</span>
+<span style="font-size:32px;font-weight:700;color:#142440">欢迎提问与交流</span>
+<span style="font-size:22px;color:#4A5873">[汇报人姓名] · [邮箱 / 联系方式]</span>
+</div>
+<div style="width:300px;height:300px;flex-shrink:0;position:relative">
+<div style="position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(79,134,247,.28)"></div>
+<div style="position:absolute;right:18px;top:18px;width:186px;height:186px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#EEF4FF 0%,#B4CFFF 30%,#7FA6F8 62%,#5A88F2 100%)"></div>
+<div class="glass" style="position:absolute;left:18px;bottom:24px;width:156px;height:156px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+<span class="mono" style="font-size:13px;letter-spacing:.2em;color:#5F6E87">THANK YOU</span>
+<span class="sora" style="font-size:34px;font-weight:700;color:#142440;letter-spacing:-.01em">Q&amp;A</span>
+</div>
+</div>
+</div>
+<div class="glass" style="padding:26px 30px;display:flex;flex-direction:column;gap:8px"><span class="mono" style="font-size:15px;letter-spacing:.2em;color:#5F6E87;padding-bottom:4px">REFERENCES</span><span style="font-size:16px;line-height:1.55;color:#4A5873">[1] W. Kwon et al. Efficient Memory Management for Large Language Model Serving with PagedAttention. SOSP 2023.</span><span style="font-size:16px;line-height:1.55;color:#4A5873">[2] vLLM Blog: Easy, Fast, and Cheap LLM Serving with PagedAttention, 2023.</span><span style="font-size:16px;line-height:1.55;color:#4A5873">[3] vLLM V1: A Major Upgrade to vLLM&#39;s Core Architecture, 2025.</span><span style="font-size:16px;line-height:1.55;color:#4A5873">[4] github.com/vllm-project/vllm · docs.vllm.ai</span></div>
+</div>
+</div>
+</div>
+</div>
+</template>
+
+<script>
+(function(){
+  const titles = ["封面", "目录", "推理挑战", "vLLM 概览", "PagedAttention", "调度与批处理", "系统架构", "功能矩阵", "性能表现", "快速上手", "总结与致谢"];
+  const src = document.getElementById('slides-src').content;
+  const slides = [...src.children];
+
+  // swatches
+  const sw = (id, list) => {
+    const el = document.getElementById(id);
+    el.innerHTML = list.map(([hex, name, use, border]) => `<div class="sw"><div class="chipc" style="background:${hex};${border ? 'border-bottom:1px solid rgba(80,110,170,.14)' : ''}"></div><div class="inf"><b>${name}</b><span class="mono">${hex}</span><span>${use}</span></div></div>`).join('');
+  };
+  sw('sw-primary', [
+    ['#2A4FB8','Blue 900','数字 / 强调'],
+    ['#2F66EE','Blue 700','渐变起点 / 按钮'],
+    ['#4F86F7','Blue 500','主色 / 数据'],
+    ['#78A0FF','Blue 400','光斑 / 色块'],
+    ['#8CBEFF','Blue 300','光斑 / 次色块'],
+    ['#DCE8FF','Blue 100','代码底 / 浅底'],
+  ]);
+  sw('sw-accent', [
+    ['#6ED2EB','Cyan 冰青','光斑 / 图标底'],
+    ['#78D7B4','Mint 薄荷','光斑 / 图标底'],
+    ['#FFDC82','Lemon 柠黄','光斑 / 标签'],
+    ['#B9A5FA','Violet 淡紫','极少量点缀'],
+    ['#F27C7C','Coral 珊瑚','指示圆点'],
+  ]);
+  sw('sw-neutral', [
+    ['#142440','Ink','标题 / 最深文字'],
+    ['#3F4E6A','Body','正文'],
+    ['#5F6E87','Muted','注释 / 标签'],
+    ['#8A97AD','Faint','页码分母'],
+    ['#F5F8FD','Canvas','页面底色', true],
+    ['#FFFFFF','Glass','玻璃基底', true],
+  ]);
+
+  // mount slides
+  const mount = (target, i) => { target.innerHTML = ''; target.appendChild(slides[i].cloneNode(true)); };
+  document.querySelectorAll('.inner[data-slide]').forEach(el => mount(el, +el.dataset.slide));
+  const gal = document.getElementById('gallery');
+  slides.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'thumb'; b.dataset.present = i;
+    b.setAttribute('aria-label', `打开第 ${i+1} 页：${titles[i]}`);
+    b.innerHTML = `<div class="scaler"><div class="inner"></div></div><div class="cap">${titles[i]}<span>${String(i+1).padStart(2,'0')} / ${slides.length}</span></div>`;
+    mount(b.querySelector('.inner'), i);
+    gal.appendChild(b);
+  });
+
+  const fit = () => document.querySelectorAll('.scaler').forEach(sc => {
+    const inner = sc.querySelector('.inner'); inner.style.transform = `scale(${sc.clientWidth / 1920})`;
+  });
+  new ResizeObserver(fit).observe(document.body); fit();
+
+  // presenter
+  const P = document.getElementById('present'), stage = document.getElementById('pstage');
+  let cur = 0, inner = null, lastFocus = null;
+  const layout = () => {
+    if (!inner) return;
+    const w = stage.clientWidth, h = stage.clientHeight, pad = P.classList.contains('full') ? 0 : 24;
+    const s = Math.min((w - pad*2) / 1920, (h - pad*2) / 1080);
+    inner.style.transform = `scale(${s})`;
+    inner.style.left = ((w - 1920*s) / 2) + 'px'; inner.style.top = ((h - 1080*s) / 2) + 'px';
+  };
+  const show = i => {
+    cur = (i + slides.length) % slides.length;
+    stage.innerHTML = ''; inner = document.createElement('div'); inner.className = 'inner';
+    mount(inner, cur); stage.appendChild(inner);
+    document.getElementById('pcount').textContent = `${cur+1} / ${slides.length} · ${titles[cur]}`;
+    layout();
+  };
+  const open = i => { lastFocus = document.activeElement; P.classList.add('on'); document.body.style.overflow = 'hidden'; show(i); document.getElementById('pnext').focus(); };
+  const close = () => {
+    P.classList.remove('on','full'); document.body.style.overflow = '';
+    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    if (lastFocus) lastFocus.focus();
+  };
+  document.addEventListener('click', e => { const t = e.target.closest('[data-present]'); if (t) open(+t.dataset.present); });
+  document.getElementById('pprev').onclick = () => show(cur - 1);
+  document.getElementById('pnext').onclick = () => show(cur + 1);
+  document.getElementById('pclose').onclick = close;
+  const toggleFull = () => {
+    if (!document.fullscreenElement) { P.requestFullscreen && P.requestFullscreen().then(() => { P.classList.add('full'); layout(); }).catch(()=>{}); }
+    else document.exitFullscreen().catch(()=>{});
+  };
+  document.getElementById('pfull').onclick = toggleFull;
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) P.classList.remove('full'); layout(); });
+  stage.addEventListener('click', e => { const r = stage.getBoundingClientRect(); show(cur + (e.clientX - r.left > r.width / 3 ? 1 : -1)); });
+  window.addEventListener('resize', layout);
+  P.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); show(cur + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(cur - 1); }
+    else if (e.key === 'Escape') { if (!document.fullscreenElement) close(); }
+    else if (e.key === 'f' || e.key === 'F') toggleFull();
+    else if (e.key === 'Home') show(0); else if (e.key === 'End') show(slides.length - 1);
+  });
+})();
+</script>
+</body>
+</html>

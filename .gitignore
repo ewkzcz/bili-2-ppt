@@ -1,0 +1,147 @@
+# 依赖目录
+node_modules/
+.pnp.cjs
+.pnp.loader.mjs
+
+# 构建产物
+dist/
+dist-ssr/
+out/
+release/
+
+# 日志与诊断文件
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.eslintcache
+
+# 应用数据与缓存
+.npm-cache/
+.parcel-cache
+.vite/
+cache/
+temp/
+output/
+
+# 开发工具配置
+# IDEA、WebStorm、PyCharm 等 JetBrains 软件
+.idea/
+*.iml
+*.ipr
+*.iws
+.fleet/
+
+# VS Code 工作区配置与本地历史
+.vscode/
+*.code-workspace
+.history/
+
+# Visual Studio 本地配置与缓存
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Eclipse 项目配置
+.settings/
+.project
+.classpath
+.factorypath
+
+# Sublime Text 与 Zed 编辑器配置
+*.sublime-project
+*.sublime-workspace
+.zed/
+
+# 环境变量与本地覆盖配置
+.env
+.env.*
+!.env.example
+
+# 操作系统生成文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.swp
+*.swo
+*.swn
+*.un~
+*~
+*.orig
+*.md
+*.MD
+!README.md
+test/
+*.psd
+psd/
+*.psb
+
+# 个人特有的 AI 指令与工作流文件
+roles/
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+CLAUDE.local.md
+GEMINI.md
+QWEN.md
+OPENCODE.md
+
+# 智能体配置、规则、技能、记忆与会话数据
+.agents/
+.agent/
+.claude/
+.codex/
+.opencode/
+.gemini/
+.qwen/
+.mcp.json
+
+# Cursor 配置、规则与索引排除文件
+.cursor/
+.cursorrules
+.cursorignore
+.cursorindexingignore
+
+# Windsurf 配置与规则
+.windsurf/
+.windsurfrules
+
+# Cline 与 Roo Code 配置、规则和自定义模式
+.cline/
+.roo/
+.clinerules/
+.clinerules
+.roorules
+.roomodes
+
+# Trae、Continue、Kiro、Kilo Code 与 Augment 配置
+.trae/
+.continue/
+.kiro/
+.kilocode/
+.augment/
+
+# Aider 配置、会话历史与缓存
+.aider.conf.yml
+.aiderignore
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache*/
+
+# GitHub Copilot 指令、提示词、智能体与技能
+**/.github/copilot-instructions.md
+**/.github/instructions/
+**/.github/prompts/
+**/.github/agents/
+**/.github/skills/
+
+# Superpowers 工作流产物（包括 docs/superpowers/）
+superpower/
+superpowers/
+.superpower/
+.superpowers/
