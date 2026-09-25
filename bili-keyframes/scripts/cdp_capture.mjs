@@ -32,7 +32,7 @@ if (!args.ws || !args.plan || !args.out || !args.log) {
   console.error('缺少必需参数');
   process.exit(2);
 }
-if (!Number.isFinite(args.settleMs)) args.settleMs = 450;
+if (!Number.isFinite(args.settleMs)) args.settleMs = 250;
 if (!Number.isFinite(args.timeoutMs)) args.timeoutMs = 25000;
 if (!Number.isFinite(args.width)) args.width = 1920;
 if (!Number.isFinite(args.height)) args.height = 1080;

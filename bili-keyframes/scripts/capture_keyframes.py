@@ -53,7 +53,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="克隆已登录配置文件时的落地目录")
     parser.add_argument("--width", type=int, default=1920)
     parser.add_argument("--height", type=int, default=1080)
-    parser.add_argument("--settle-ms", type=int, default=450, help="跳转完成后的画面稳定等待时间")
+    parser.add_argument("--settle-ms", type=int, default=250,
+                        help="跳转完成后的画面稳定等待时间；去重总览里出现糊帧、转场半帧时调回 450")
     parser.add_argument("--timeout-ms", type=int, default=45000, help="单张截图的跳转超时")
     parser.add_argument("--keep-browser", action="store_true", help="采集结束后保留浏览器窗口")
     args = parser.parse_args(argv)

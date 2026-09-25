@@ -22,6 +22,8 @@ unzip -o presentation.pptx -d unpacked/
 "$PY" "$SKILL_ROOT"/bili-pptx/scripts/render_preview.py $WORK/deck/deck.pptx -o $WORK/deck/preview/ --slides 3,7,12
 ```
 
+带 `--slides` 时脚本先复制一份只含这几页的 pptx 再转 PDF，几百页的 deck 每轮也只转要看的页；
+图片仍按原页号命名。页码域在图里会显示成裁剪后的序号，属正常现象，不算问题。
 全量渲染（不带 `--slides`）用于读模版原件。底层就是两步，需要手动控制参数时直接用：
 
 ```bash

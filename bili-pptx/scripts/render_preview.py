@@ -16,6 +16,8 @@ PowerPoint 的入场动画只控制「什么时候显示」，元素本身始终
 
 自检只渲染需要复查的页（建页前评估的高风险页 + validate_deck.py --suspects 报出的页），
 不做全量逐页扫描；全量渲染只在看模版原件时用。
+带 --slides 时先复制一份只含这几页的 pptx 再交给 LibreOffice，几百页的 deck 也只转要看的页；
+输出图片仍按原页号命名（slide-07.jpg 就是原 deck 第 7 页）。页码域会显示成裁剪后的序号，看版面时忽略即可。
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -113,21 +116,49 @@ def to_pdf(pptx: Path, out_dir: Path) -> Path:
     return pdf
 
 
-def to_images(pdf: Path, out_dir: Path, *, dpi: int, slides: list[int] | None) -> list[Path]:
-    """把 PDF 转成 JPEG：slides 为空时全部页，否则只转指定的几页。"""
+def trim_deck(pptx: Path, slides: list[int], work_dir: Path) -> tuple[Path, int] | None:
+    """复制一份只保留指定页的 pptx，返回（副本路径，原 deck 总页数）；页号全覆盖或读不了时返回 None。"""
+    try:
+        from pptx import Presentation
+    except ImportError:
+        return None
+    prs = Presentation(str(pptx))
+    id_list = prs.slides._sldIdLst
+    total = len(id_list)
+    keep = {no for no in slides if 1 <= no <= total}
+    if not keep or len(keep) == total:
+        return None
+    for index, sld_id in enumerate(list(id_list), start=1):
+        if index not in keep:
+            prs.part.drop_rel(sld_id.rId)
+            id_list.remove(sld_id)
+    trimmed = work_dir / pptx.name
+    prs.save(str(trimmed))
+    return trimmed, total
+
+
+def to_images(pdf: Path, out_dir: Path, *, dpi: int, slides: list[int] | None,
+              names: list[int] | None = None, width: int = 0) -> list[Path]:
+    """把 PDF 转成 JPEG：slides 为空时全部页，否则只转指定的几页。
+
+    names 给出时（裁剪副本），第 i 个 PDF 页存成 slide-<names[i]>.jpg，按原页号命名。
+    """
     pdftoppm = find_pdftoppm()
     out_dir.mkdir(parents=True, exist_ok=True)
-    ranges = [(no, no) for no in slides] if slides else [(None, None)]
-    for first, last in ranges:
-        command = [pdftoppm, "-jpeg", "-r", str(dpi)]
-        if first is not None:
-            command += ["-f", str(first), "-l", str(last)]
-        command += [str(pdf), str(out_dir / "slide")]
-        result = subprocess.run(command, capture_output=True, text=True, timeout=300)
+    if names:
+        jobs = [["-f", str(page), "-l", str(page), "-singlefile", str(pdf), str(out_dir / f"slide-{no:0{width}d}")]
+                for page, no in enumerate(names, start=1)]
+    else:
+        ranges = [["-f", str(no), "-l", str(no)] for no in slides] if slides else [[]]
+        jobs = [[*r, str(pdf), str(out_dir / "slide")] for r in ranges]
+    for job in jobs:
+        result = subprocess.run([pdftoppm, "-jpeg", "-r", str(dpi), *job], capture_output=True, text=True, timeout=300)
         if result.returncode != 0:
             raise SystemExit(
                 f"pdftoppm 失败（退出码 {result.returncode}）\n{result.stderr.strip()}"
             )
+    if names:
+        return [out_dir / f"slide-{no:0{width}d}.jpg" for no in names]
     return sorted(out_dir.glob("slide-*.jpg"))
 
 
@@ -149,14 +180,25 @@ def main() -> int:
     out_dir = args.out_dir or (args.pptx.parent / f"{args.pptx.stem}-preview")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    pdf = to_pdf(args.pptx, out_dir)
     slides = [int(no) for no in args.slides.split(",") if no.strip()] if args.slides else []
     if args.slide is not None:
         slides.append(args.slide)
-    images = to_images(pdf, out_dir, dpi=args.dpi, slides=sorted(set(slides)) or None)
+    slides = sorted(set(slides))
 
-    if not args.keep_pdf:
-        pdf.unlink(missing_ok=True)
+    with tempfile.TemporaryDirectory(prefix="render_preview_") as tmp:
+        trimmed = trim_deck(args.pptx, slides, Path(tmp)) if slides else None
+        if trimmed:
+            deck, total = trimmed
+            pdf = to_pdf(deck, Path(tmp))
+            kept = [no for no in slides if 1 <= no <= total]
+            images = to_images(pdf, out_dir, dpi=args.dpi, slides=None, names=kept, width=len(str(total)))
+        else:
+            pdf = to_pdf(args.pptx, out_dir)
+            images = to_images(pdf, out_dir, dpi=args.dpi, slides=slides or None)
+        if args.keep_pdf and pdf.parent != out_dir:
+            shutil.copy2(pdf, out_dir / pdf.name)
+        elif not args.keep_pdf:
+            pdf.unlink(missing_ok=True)
 
     if not images:
         print("没有生成任何图片，检查一下这份 pptx 是不是空的", file=sys.stderr)
