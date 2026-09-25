@@ -73,9 +73,6 @@ Thumbs.db
 *.un~
 *~
 *.orig
-*.md
-*.MD
-!README.md
 test/
 *.psd
 psd/
