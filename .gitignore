@@ -142,3 +142,7 @@ superpower/
 superpowers/
 .superpower/
 .superpowers/
+
+# Python 缓存
+__pycache__/
+*.pyc

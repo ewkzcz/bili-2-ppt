@@ -125,7 +125,10 @@ def write_transcript(model: Any, args: argparse.Namespace, audio: Path, out: Pat
         "text": text,
     }
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 先写临时文件再改名：前面几集一落盘就能交给纠错，不会读到写了一半的文件
+    partial = out.with_name(out.name + ".partial")
+    partial.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    partial.replace(out)
     print(json.dumps({"out": str(out), "chars": len(text)}, ensure_ascii=False), flush=True)
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
