@@ -12,7 +12,10 @@ PowerPoint 的入场动画只控制「什么时候显示」，元素本身始终
 
 用法：
     .keyframe-venv/bin/python render_preview.py deck.pptx --out-dir preview/
-    .keyframe-venv/bin/python render_preview.py deck.pptx -o preview/ --slide 3
+    .keyframe-venv/bin/python render_preview.py deck.pptx -o preview/ --slides 3,7,12
+
+自检只渲染需要复查的页（建页前评估的高风险页 + validate_deck.py --suspects 报出的页），
+不做全量逐页扫描；全量渲染只在看模版原件时用。
 """
 
 from __future__ import annotations
@@ -110,20 +113,21 @@ def to_pdf(pptx: Path, out_dir: Path) -> Path:
     return pdf
 
 
-def to_images(pdf: Path, out_dir: Path, *, dpi: int, slide: int | None) -> list[Path]:
-    """把 PDF 逐页转成 JPEG。"""
+def to_images(pdf: Path, out_dir: Path, *, dpi: int, slides: list[int] | None) -> list[Path]:
+    """把 PDF 转成 JPEG：slides 为空时全部页，否则只转指定的几页。"""
     pdftoppm = find_pdftoppm()
     out_dir.mkdir(parents=True, exist_ok=True)
-    command = [pdftoppm, "-jpeg", "-r", str(dpi)]
-    if slide is not None:
-        command += ["-f", str(slide), "-l", str(slide)]
-    command += [str(pdf), str(out_dir / "slide")]
-
-    result = subprocess.run(command, capture_output=True, text=True, timeout=300)
-    if result.returncode != 0:
-        raise SystemExit(
-            f"pdftoppm 失败（退出码 {result.returncode}）\n{result.stderr.strip()}"
-        )
+    ranges = [(no, no) for no in slides] if slides else [(None, None)]
+    for first, last in ranges:
+        command = [pdftoppm, "-jpeg", "-r", str(dpi)]
+        if first is not None:
+            command += ["-f", str(first), "-l", str(last)]
+        command += [str(pdf), str(out_dir / "slide")]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=300)
+        if result.returncode != 0:
+            raise SystemExit(
+                f"pdftoppm 失败（退出码 {result.returncode}）\n{result.stderr.strip()}"
+            )
     return sorted(out_dir.glob("slide-*.jpg"))
 
 
@@ -133,6 +137,7 @@ def main() -> int:
     parser.add_argument("--out-dir", "-o", type=Path, default=None, help="输出目录")
     parser.add_argument("--dpi", type=int, default=110, help="渲染分辨率（默认 110）")
     parser.add_argument("--slide", type=int, default=None, help="只渲染某一页")
+    parser.add_argument("--slides", default=None, help="只渲染这几页，逗号分隔，如 3,7,12")
     parser.add_argument(
         "--keep-pdf", action="store_true", help="保留中间 PDF，方便直接翻看"
     )
@@ -145,7 +150,10 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     pdf = to_pdf(args.pptx, out_dir)
-    images = to_images(pdf, out_dir, dpi=args.dpi, slide=args.slide)
+    slides = [int(no) for no in args.slides.split(",") if no.strip()] if args.slides else []
+    if args.slide is not None:
+        slides.append(args.slide)
+    images = to_images(pdf, out_dir, dpi=args.dpi, slides=sorted(set(slides)) or None)
 
     if not args.keep_pdf:
         pdf.unlink(missing_ok=True)
@@ -158,7 +166,7 @@ def main() -> int:
     for image in images:
         print(f"  {image}")
     print()
-    print("逐页看图，按「视觉自检」那节列问题。第一遍基本都会有毛病。")
+    print("只看重叠、溢出、截断、出框这类主要问题，修完重渲染改过的页即可。")
     return 0
 
 
