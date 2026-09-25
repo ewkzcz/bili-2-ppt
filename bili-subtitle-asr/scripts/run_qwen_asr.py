@@ -58,9 +58,11 @@ def normalize_language(value: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run Qwen3-ASR on one audio file.")
-    parser.add_argument("--audio", required=True, type=Path)
-    parser.add_argument("--out", required=True, type=Path)
+    parser = argparse.ArgumentParser(description="Run Qwen3-ASR on one or more audio files, loading the model once.")
+    parser.add_argument("--audio", type=Path, help="Single audio file (use with --out).")
+    parser.add_argument("--out", type=Path, help="Output JSON for --audio.")
+    parser.add_argument("--jobs", type=Path,
+                        help="JSON list of {audio, out}; files are transcribed one after another in this process.")
     parser.add_argument("--model", default="Qwen/Qwen3-ASR-0.6B")
     parser.add_argument("--language", default="Chinese")
     parser.add_argument("--device-map", default="auto")
@@ -68,6 +70,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-new-tokens", type=int, default=8192)
     parser.add_argument("--chunk-seconds", type=float, default=60.0, help="Split audio into chunks; use 0 to disable.")
     args = parser.parse_args(argv)
+    if args.jobs:
+        jobs = [(Path(j["audio"]), Path(j["out"])) for j in json.loads(args.jobs.read_text(encoding="utf-8"))]
+    elif args.audio and args.out:
+        jobs = [(args.audio, args.out)]
+    else:
+        parser.error("pass --audio with --out, or --jobs")
 
     try:
         import torch
@@ -93,14 +101,22 @@ def main(argv: list[str] | None = None) -> int:
         max_new_tokens=args.max_new_tokens,
         max_inference_batch_size=1,
     )
-    segments = transcribe_with_optional_chunks(model, args.audio, language, args.chunk_seconds, sf, torch)
+    # 模型只加载一次，多个音频在同一进程里逐个串行识别，不并发。
+    for audio, out in jobs:
+        write_transcript(model, args, audio, out, language, device_map, dtype, sf, torch)
+    return 0
+
+
+def write_transcript(model: Any, args: argparse.Namespace, audio: Path, out: Path, language: str,
+                     device_map: str, dtype: Any, sf: Any, torch: Any) -> None:
+    segments = transcribe_with_optional_chunks(model, audio, language, args.chunk_seconds, sf, torch)
     text = "\n".join(segment["text"] for segment in segments if segment.get("text")).strip()
     output_language = segments[0].get("language", language) if segments else language
     payload = {
         "model": args.model,
         "backend": "qwen3-asr",
         "language": output_language,
-        "audio": str(args.audio),
+        "audio": str(audio),
         "device_map": device_map,
         "dtype": str(dtype).replace("torch.", ""),
         "max_new_tokens": args.max_new_tokens,
@@ -108,10 +124,11 @@ def main(argv: list[str] | None = None) -> int:
         "segments": segments,
         "text": text,
     }
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"out": str(args.out), "chars": len(text)}, ensure_ascii=False))
-    return 0
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({"out": str(out), "chars": len(text)}, ensure_ascii=False), flush=True)
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 def transcribe_one(model: Any, audio: Path, language: str) -> dict[str, Any]:

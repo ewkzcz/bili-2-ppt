@@ -9,7 +9,7 @@
   不需要外部 CDP 代理；静默后台，浏览器正在运行就克隆配置文件）；
 - `scripts/process_video_part.py`：单分集提取、ASR 和材料归档；
 - `scripts/asr_segments.py`：WAV 分段、逐段识别和全局时间戳合并；
-- `scripts/run_qwen_asr.py`：Qwen3-ASR 单音频调用适配器；
+- `scripts/run_qwen_asr.py`：Qwen3-ASR 调用适配器，多个音频在同一进程里只加载一次模型、逐个串行识别；
 - `scripts/archive_bili_materials.py`：当前提取目录的材料归档；
 - `scripts/validate_asr_output.py`：定时字幕 JSON 校验；
 - `scripts/check_environment.py`：Python、FFmpeg 和可选 ASR 后端检查。

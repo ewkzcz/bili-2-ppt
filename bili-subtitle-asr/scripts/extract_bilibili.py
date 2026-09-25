@@ -666,22 +666,19 @@ def transcribe_wavs_qwen(
         raise RuntimeError(f"Qwen helper script not found: {helper}")
 
     python = find_qwen_python(qwen_python)
-    results = []
-    for item in manifest:
-        stem = f"p{int(item['page']):02d}_{item['cid']}"
-        txt_path = out_dir / f"{stem}.txt"
-        json_path = out_dir / f"{stem}.json"
-        if txt_path.exists() and json_path.exists() and not force:
-            results.append({**item, "transcript_txt": str(txt_path), "transcript_json": str(json_path)})
-            continue
-
+    stems = [f"p{int(item['page']):02d}_{item['cid']}" for item in manifest]
+    pending = [(item, stem) for item, stem in zip(manifest, stems)
+               if force or not ((out_dir / f"{stem}.txt").exists() and (out_dir / f"{stem}.json").exists())]
+    if pending:
+        # 所有待识别的音频交给同一个子进程：模型只加载一次，文件逐个串行识别。
+        jobs_path = out_dir / "_qwen_jobs.json"
+        jobs_path.write_text(json.dumps([{"audio": str(item["wav"]), "out": str(out_dir / f"{stem}.json")}
+                                         for item, stem in pending], ensure_ascii=False), encoding="utf-8")
         cmd = [
             python,
             str(helper),
-            "--audio",
-            str(item["wav"]),
-            "--out",
-            str(json_path),
+            "--jobs",
+            str(jobs_path),
             "--model",
             model_name,
             "--language",
@@ -697,14 +694,15 @@ def transcribe_wavs_qwen(
         ]
         env = asr_env(model_name)
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=env)
+        jobs_path.unlink(missing_ok=True)
         if result.returncode != 0:
             detail = result.stderr[-1600:] or result.stdout[-1600:]
             raise RuntimeError(f"Qwen3-ASR failed using {python}: {detail}")
-        data = json.loads(json_path.read_text(encoding="utf-8"))
-        text = str(data.get("text") or "").strip()
-        txt_path.write_text(text, encoding="utf-8")
-        results.append({**item, "transcript_txt": str(txt_path), "transcript_json": str(json_path)})
-    return results
+        for _, stem in pending:
+            data = json.loads((out_dir / f"{stem}.json").read_text(encoding="utf-8"))
+            (out_dir / f"{stem}.txt").write_text(str(data.get("text") or "").strip(), encoding="utf-8")
+    return [{**item, "transcript_txt": str(out_dir / f"{stem}.txt"), "transcript_json": str(out_dir / f"{stem}.json")}
+            for item, stem in zip(manifest, stems)]
 
 
 def transcribe_in_python(

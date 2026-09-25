@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -72,3 +73,31 @@ def test_write_bilibili_subtitle_outputs(tmp_path):
     srt = Path(outputs["srt"]).read_text(encoding="utf-8")
     assert "00:00:00,000 --> 00:00:01,200" in srt
     assert "00:00:01,200 --> 00:00:03,400" in srt
+
+
+def test_transcribe_wavs_qwen_runs_all_pending_files_in_one_process(monkeypatch, tmp_path):
+    module = load_module()
+    monkeypatch.setattr(module, "find_qwen_python", lambda explicit=None: sys.executable)
+    manifest = [{"page": 1, "cid": 11, "wav": str(tmp_path / "a.wav")},
+                {"page": 2, "cid": 22, "wav": str(tmp_path / "b.wav")},
+                {"page": 3, "cid": 33, "wav": str(tmp_path / "c.wav")}]
+    (tmp_path / "p01_11.txt").write_text("done", encoding="utf-8")
+    (tmp_path / "p01_11.json").write_text("{}", encoding="utf-8")
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        jobs = json.loads(Path(cmd[cmd.index("--jobs") + 1]).read_text(encoding="utf-8"))
+        for job in jobs:
+            Path(job["out"]).write_text(json.dumps({"text": f"text of {Path(job['audio']).name}"}), encoding="utf-8")
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    results = module.transcribe_wavs_qwen(manifest, tmp_path, "m", "zh", None, "auto", "auto", 8192, 60.0)
+
+    assert len(calls) == 1
+    assert (tmp_path / "p02_22.txt").read_text(encoding="utf-8") == "text of b.wav"
+    assert (tmp_path / "p03_33.txt").read_text(encoding="utf-8") == "text of c.wav"
+    assert (tmp_path / "p01_11.txt").read_text(encoding="utf-8") == "done"
+    assert [r["transcript_txt"] for r in results] == [str(tmp_path / f"{s}.txt") for s in ("p01_11", "p02_22", "p03_33")]
+    assert not (tmp_path / "_qwen_jobs.json").exists()
