@@ -10,21 +10,18 @@ import tempfile
 from pathlib import Path
 
 
-def sample_count(duration: float) -> int:
-    """使用与关键帧流程一致的分段密度，长视频不按原速播放。"""
-    if duration <= 180:
-        return 4
-    if duration <= 600:
-        return 6
-    if duration <= 1200:
-        return 8
-    if duration <= 1800:
-        return 10
-    if duration <= 2400:
-        return 13
-    if duration <= 3600:
-        return 16
-    return 20
+# 默认每隔多少秒采一张。宁可多采：重复画面由去重收拾，漏采的画面事后补不回来。
+# 按固定张数分档（比如 14 分钟只采 8 张）会漏掉大半幻灯片，已废弃。
+DEFAULT_INTERVAL_SECONDS = 10.0
+# 避开片头第一帧和片尾自动切集的区域（秒）
+EDGE_MARGIN_SECONDS = 2.0
+
+
+def sample_times(duration: float, interval: float) -> list[float]:
+    """按固定间隔在 [片头余量, 时长 - 片尾余量] 内均匀取点，每个间隔取中点。"""
+    start, end = EDGE_MARGIN_SECONDS, max(duration - EDGE_MARGIN_SECONDS, EDGE_MARGIN_SECONDS)
+    count = max(1, int((end - start) // interval) + 1)
+    return [round(min(start + interval * (i + 0.5), end), 2) for i in range(count)]
 
 
 def main() -> None:
@@ -33,6 +30,8 @@ def main() -> None:
     # 中间文件默认放系统临时目录，不落进当前目录或仓库
     parser.add_argument("--output", type=Path,
                         default=Path(tempfile.gettempdir()) / "bili-2-ppt" / "keyframe_plan.json")
+    parser.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_SECONDS,
+                        help="采样间隔秒数，默认 10；画面切换特别快的可以再调小")
     args = parser.parse_args()
 
     data = json.loads(args.metadata.read_text(encoding="utf-8"))
@@ -44,14 +43,13 @@ def main() -> None:
     plan = []
     for index, episode in enumerate(episodes, start=1):
         duration = float(episode.get("duration", 0))
-        count = sample_count(duration)
-        times = [duration * (0.03 + 0.94 * i / max(count - 1, 1)) for i in range(count)]
+        times = sample_times(duration, args.interval)
         raw_part = episode.get("page", episode.get("part", index))
         part_number = int(raw_part) if str(raw_part).isdigit() else index
         title = episode.get("title") or episode.get("part", "")
-        plan.append({"part": part_number, "title": title, "duration": duration, "times": [round(t, 2) for t in times]})
+        plan.append({"part": part_number, "title": title, "duration": duration, "times": times})
 
-    result = {"method": "visible-player-progress-seek", "video_download": False, "ocr": False, "episodes": plan}
+    result = {"method": "visible-player-progress-seek", "interval": args.interval, "video_download": False, "ocr": False, "episodes": plan}
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(args.output)
 

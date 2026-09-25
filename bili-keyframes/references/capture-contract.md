@@ -48,7 +48,7 @@
 ```json
 {
   "method": "gray-thumbnail-mean-abs-diff",
-  "threshold": 9.0,
+  "threshold": 3.0,
   "keep_policy": "last-frame-of-each-run",
   "parts": [
     {"part": 5, "kept": [{"time": 53.0, "file": "frames/P05/00053.png"}], "kept_count": 1, "dropped_count": 4}

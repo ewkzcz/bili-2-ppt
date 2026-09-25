@@ -21,6 +21,12 @@ from PIL import Image, ImageChops, ImageStat
 
 
 SIGNATURE_SIZE = (96, 54)
+# 默认阈值。旧默认 9 会把版式相近、内容不同的幻灯片（同一模版的相邻页）合并掉；
+# 实测 2–3 才与人眼判断一致，宁可多留几张近似的，也不要吞掉不同的画面。
+DEFAULT_THRESHOLD = 3.0
+# 缩略图总览：每张缩略图的尺寸与每行张数
+SHEET_THUMB = (240, 135)
+SHEET_COLUMNS = 8
 IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".webp", ".bmp")
 FRAME_LIST_KEYS = ("frames", "captures", "records", "entries", "logs", "keyframes")
 TIME_KEYS = ("actual_time", "requested_time", "time", "seconds", "timestamp")
@@ -211,11 +217,44 @@ def dedupe_across_parts(
     return survivors, dropped
 
 
+def write_contact_sheet(entries: list[dict[str, Any]], kept: list[dict[str, Any]], path: Path) -> None:
+    """所有帧按时间排成网格：保留的加绿框，被合并的变暗。用来校准阈值——
+    相邻两张明显不同却有一张变暗，说明阈值太高，调低后只重跑去重。"""
+    from PIL import ImageDraw, ImageEnhance
+
+    kept_files = {entry["file"] for entry in kept}
+    ordered = sorted(entries, key=lambda e: (e["part"], e["time"]))
+    if not ordered:
+        return
+    width, height = SHEET_THUMB
+    label = 18
+    rows = (len(ordered) + SHEET_COLUMNS - 1) // SHEET_COLUMNS
+    sheet = Image.new("RGB", (SHEET_COLUMNS * width, rows * (height + label)), (32, 32, 32))
+    draw = ImageDraw.Draw(sheet)
+    for index, entry in enumerate(ordered):
+        x, y = (index % SHEET_COLUMNS) * width, (index // SHEET_COLUMNS) * (height + label)
+        try:
+            with Image.open(entry["file"]) as image:
+                thumb = image.convert("RGB").resize(SHEET_THUMB)
+        except OSError:
+            continue
+        is_kept = entry["file"] in kept_files
+        if not is_kept:
+            thumb = ImageEnhance.Brightness(thumb).enhance(0.35)
+        sheet.paste(thumb, (x, y))
+        if is_kept:
+            draw.rectangle([x, y, x + width - 1, y + height - 1], outline=(46, 204, 113), width=4)
+        draw.text((x + 4, y + height + 2), f"P{entry['part']:02d} {entry['time']:.0f}s" + (" KEEP" if is_kept else ""),
+                  fill=(230, 230, 230))
+    sheet.save(path, quality=80)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="对可见播放器截图做画面去重，并提示需要补采样的时间区间")
     parser.add_argument("source", type=Path, help="帧目录、manifest.json 或 capture_log.jsonl")
     parser.add_argument("--output-dir", type=Path, default=None, help="默认写到输入同级的 dedup/")
-    parser.add_argument("--threshold", type=float, default=9.0, help="平均像素差低于该值视为同一画面")
+    parser.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD,
+                        help=f"平均像素差低于该值视为同一画面，默认 {DEFAULT_THRESHOLD}；看缩略图总览发现不同画面被合并就调低")
     parser.add_argument("--max-gap", type=float, default=90.0, help="相邻保留画面跨度超过该秒数时提示补采样")
     parser.add_argument(
         "--cross-threshold",
@@ -287,6 +326,7 @@ def main() -> int:
         )
 
     hints = collect_hints(all_kept, args.max_gap)
+    write_contact_sheet(entries, all_kept, output_dir / "contact_sheet.jpg")
     (output_dir / "dedup_keep.json").write_text(
         json.dumps(
             {
@@ -317,6 +357,7 @@ def main() -> int:
     print(f"合计 保留 {len(all_kept)} 丢弃 {len(all_dropped)} 补采样建议 {len(hints)}")
     if errors:
         print(f"读取失败 {len(errors)} 帧，见 dedup_keep.json 的 errors 字段")
+    print(f"缩略图总览：{output_dir / 'contact_sheet.jpg'}（绿框保留、变暗被合并，不同画面被合并就调低 --threshold）")
     print(output_dir)
     return 0
 
