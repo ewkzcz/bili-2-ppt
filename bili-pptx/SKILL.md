@@ -39,21 +39,21 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 
 ## 读模版
 
-做 deck 之前把所选模版读透，这一步不交给脚本归纳。本技能的命令都在 `agent-docs/Agent` 下运行：
+做 deck 之前把所选模版读透，这一步不交给脚本归纳。命令里的 `$SKILL_ROOT`、`$PY` 见调度器的「运行环境」：
 
 1. **看原件**：逐页出图看版面，再读 html 里的设计说明：
 
    ```bash
-   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/render_preview.py \
-     bili-2-ppt/bili-pptx/references/<模版名>.pptx -o $WORK/deck/template-preview/
+   "$PY" "$SKILL_ROOT"/bili-pptx/scripts/render_preview.py \
+     "$SKILL_ROOT"/bili-pptx/references/<模版名>.pptx -o $WORK/deck/template-preview/
    ```
 
 2. **读元数据**：列出主题配色与字体、每页背景、每个形状的坐标 / 填充 / 描边 / 圆角 / 投影、
    每段文字的字体 / 字号 / 颜色 / 字距：
 
    ```bash
-   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/read_pptx.py \
-     bili-2-ppt/bili-pptx/references/<模版名>.pptx [--slides 1,3]
+   "$PY" "$SKILL_ROOT"/bili-pptx/scripts/read_pptx.py \
+     "$SKILL_ROOT"/bili-pptx/references/<模版名>.pptx [--slides 1,3]
    ```
 
    需要更细的就 `unzip -o <模版名>.pptx -d $WORK/deck/template-xml/` 解包读 XML，背景纹理图在 `ppt/media/` 下；
@@ -66,7 +66,7 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 4. **装字体**：检查原件用到的字体，缺的能装就装：
 
    ```bash
-   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/ensure_fonts.py <模版名>
+   "$PY" "$SKILL_ROOT"/bili-pptx/scripts/ensure_fonts.py <模版名>
    ```
 
 ## 绘图工具
@@ -136,13 +136,13 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 4. **合并并注入动画**：
 
    ```bash
-   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/inject_animations.py $WORK/deck/deck.pptx
+   "$PY" "$SKILL_ROOT"/bili-pptx/scripts/inject_animations.py $WORK/deck/deck.pptx
    ```
 
 5. **结构校验**：
 
    ```bash
-   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/validate_deck.py $WORK/deck/deck.pptx
+   "$PY" "$SKILL_ROOT"/bili-pptx/scripts/validate_deck.py $WORK/deck/deck.pptx
    ```
 
    查禁用词、占位符残留、动画声明与形状 id 的对应、组号连续性、形状出框、中文字体、
@@ -175,7 +175,8 @@ deck 在 `$WORK/deck/` 里建好、注入动画、校验完，再把最终的两
 
 ## 依赖
 
-装在 `agent-docs/Agent/.keyframe-venv` 里，用 `agent-docs/Agent/.keyframe-venv/bin/python` 运行：
+用 `$PY` 运行（先用固定路径，缺依赖时自动搜索本机已有环境复用，都没有才自动建共用 venv 安装，
+见调度器的「运行环境」）：
 
 - `python-pptx`、`Pillow`、`lxml`；
 - LibreOffice（`brew install --cask libreoffice`）：pptx → PDF，视觉自检要用；

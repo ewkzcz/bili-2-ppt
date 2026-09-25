@@ -79,14 +79,14 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
   每一对是一个可选模版（只有 pptx 没有 html 的不算）：
 
   ```bash
-  ls bili-2-ppt/bili-pptx/references/*.pptx bili-2-ppt/bili-pptx/references/*.html
+  ls "$SKILL_ROOT"/bili-pptx/references/*.pptx "$SKILL_ROOT"/bili-pptx/references/*.html
   ```
 
 - **Markdown 模版**：`bili-document-builder/references/templates/` 下同时有 `描述.md` 与 `案例.md` 的子目录，
   每个是一个可选模版，简介取 `描述.md` frontmatter 的 `description`：
 
   ```bash
-  .keyframe-venv/bin/python bili-2-ppt/bili-document-builder/scripts/validate_document_output.py --list
+  "$PY" "$SKILL_ROOT"/bili-document-builder/scripts/validate_document_output.py --list
   ```
 
 提问里的选项以这次读到的为准，不要照抄本文件或 README 里写过的模版名。
@@ -111,6 +111,34 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
   （用户发起任务时所在的目录）。交付物在 `$WORK` 里做完、校验完，再写到交付目录；
 - 流程结束后 `$WORK` 保留，便于验收后继续优化；它的路径写进验收报告。系统会不定期清理临时目录，
   需要长期留存的只有交付物。
+
+### 运行环境：先走固定路径，再自动搜索复用，全程不问
+
+命令里的两个变量：
+
+- `$SKILL_ROOT`：本技能根目录，也就是本 `SKILL.md` 所在的目录。所有脚本都按它拼路径，
+  不假设从哪个目录运行；
+- `$PY`：运行本技能 Python 脚本的解释器，按下面的顺序自动决定。
+
+**先走固定路径**：`$BILI_PYTHON` 环境变量指定的解释器；没设就用当前的 `python3`（Windows 是 `python`）。
+它装齐了这一步要用的依赖（建 PPT：`python-pptx`、`Pillow`、`lxml`；截图：`Pillow`、`websocket-client`）就直接用。
+
+**再兜底搜索复用**：固定路径缺依赖时，用共用脚本搜本机已有的环境，找到就用：
+
+```bash
+PY="$(python3 "$SKILL_ROOT"/scripts/discover_env.py --need tools --ensure)"
+```
+
+它向各环境管理工具查询已有环境（conda、pyenv、pipx、uv、virtualenvwrapper、Windows 的 `py` 启动器，
+以及项目目录里的虚拟环境），不写死任何安装路径；都没有时自动建一个共用 venv 装好依赖，之后复用。
+
+**ASR 同样如此，不需要手动指定**：`extract_bilibili.py` 先用 `--qwen-python` / `$BILI_ASR_PYTHON` / 当前解释器，
+没有可用后端时自动搜索本机装了 Qwen3-ASR / faster-whisper / openai-whisper / funasr 的环境复用，
+优先 GPU（CUDA / Apple MPS），并优先用本机已下载完整的模型，不重复下载。ffmpeg 不在 PATH 上时也会自动搜到。
+搜索结果缓存在 `<系统临时目录>/bili-2-ppt/env.json`，24 小时内复用。
+
+这一步**不向用户提问**，搜到了什么、用了哪个环境记进验收报告即可。
+只有固定路径和搜索都没有、自动安装也失败时，才算「无法继续」的阻塞。
 
 ### 第二步：一条消息问完
 
@@ -151,6 +179,7 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
 全部交付物完成后，用一条消息交验收报告：
 
 - 交付物清单与路径（每份 Markdown、每个版本的 PPT）；中间文件所在的 `$WORK` 路径；
+  实际用到的 Python 环境、ASR 后端与模型（固定路径还是搜索复用来的）；
 - 各交付物的校验结果；PPT 定向看图做了几轮、还剩哪些已知的小瑕疵；
 - 文中标了「待补充」的地方及原因；
 - 中途自行做的决定（上面第三步里那些）。

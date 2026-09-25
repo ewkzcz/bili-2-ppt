@@ -19,10 +19,10 @@ python-pptx 没有动画 API——动画只存在于幻灯片 XML 的 <p:timing>
 等于把内部处理痕迹留给了读者。
 
 用法：
-    .keyframe-venv/bin/python inject_animations.py deck.pptx
-    .keyframe-venv/bin/python inject_animations.py deck.pptx --out deck-anim.pptx \\
+    python3 inject_animations.py deck.pptx
+    python3 inject_animations.py deck.pptx --out deck-anim.pptx \\
         --effect fade --duration 500
-    .keyframe-venv/bin/python inject_animations.py deck.pptx --dry-run
+    python3 inject_animations.py deck.pptx --dry-run
 """
 
 from __future__ import annotations

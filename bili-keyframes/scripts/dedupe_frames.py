@@ -6,7 +6,7 @@
 连续重复画面保留的是最后一帧：采集到的重复画面里，最后一帧才是画面定格、内容完整的那一张，
 第一帧可能停在淡入或代码刚敲到一半的中间态。
 
-需要 Pillow，用 agent-docs/Agent/.keyframe-venv/bin/python 运行。
+需要 Pillow。
 """
 
 from __future__ import annotations

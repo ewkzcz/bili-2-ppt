@@ -45,18 +45,48 @@ def is_chinese_language(value: str | None) -> bool:
     return key in {"", "zh", "zh-cn", "zh_cn", "cn", "chinese", "mandarin"}
 
 
-def qwen_venv_python_paths(venv: Path) -> list[Path]:
-    return [venv / "Scripts" / "python.exe", venv / "bin" / "python"]
+# 固定路径都不满足时，交给共用的环境搜索兜底：搜本机已有的 Python 环境、ASR 后端和已下载的模型并复用
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+try:
+    import discover_env  # noqa: E402
+except ImportError:  # 单独拷走本子技能时没有共用脚本，只走固定路径
+    discover_env = None
+
+# 搜索兜底选中的 ASR：{backend, python, device, model}；固定路径命中时为 None
+_DISCOVERED_ASR: dict | None = None
 
 
-def qwen_python_candidates(explicit: str | None = None) -> list[str]:
-    """只使用调用方指定或当前 Python，不搜索其他技能的环境。"""
-    return list(dict.fromkeys(x for x in [explicit, os.environ.get("BILI_ASR_PYTHON"), sys.executable] if x))
+def ensure_ffmpeg_on_path() -> None:
+    """固定路径：PATH 上的 ffmpeg；没有就搜本机已有的（Homebrew 前缀、其他环境自带的），把所在目录加进 PATH。"""
+    if shutil.which("ffmpeg") or discover_env is None:
+        return
+    found = discover_env.find_ffmpeg() or discover_env.discover()["ffmpeg"]
+    if found:
+        os.environ["PATH"] = str(Path(found).parent) + os.pathsep + os.environ.get("PATH", "")
+
+
+ensure_ffmpeg_on_path()
+
+
+def discovered_asr(language: str, backend: str | None = None) -> dict | None:
+    """固定路径没有可用后端时，搜索本机已有环境复用。结果记下来，转写时用同一个环境与模型。"""
+    global _DISCOVERED_ASR
+    if discover_env is None:
+        return None
+    if _DISCOVERED_ASR and (backend is None or _DISCOVERED_ASR["backend"] == backend):
+        return _DISCOVERED_ASR
+    choice = discover_env.best_asr(is_chinese_language(language), backend)
+    if choice:
+        _DISCOVERED_ASR = choice
+        print(f"[asr] 固定路径无可用后端，复用本机已有环境：{choice['backend']} @ {choice['python']}"
+              + (f"，模型 {choice['model']}" if choice.get("model") else ""), file=sys.stderr)
+    return choice
 
 
 def find_qwen_python(explicit: str | None = None) -> str:
-    """解析独立的 ASR 运行环境，缺失解释器时明确报错。"""
-    candidate = explicit or os.environ.get("BILI_ASR_PYTHON") or sys.executable
+    """解析 ASR 运行环境：显式参数 → BILI_ASR_PYTHON → 搜索兜底选中的环境 → 当前解释器。"""
+    fallback = _DISCOVERED_ASR["python"] if _DISCOVERED_ASR and _DISCOVERED_ASR["backend"] == "qwen3-asr" else None
+    candidate = explicit or os.environ.get("BILI_ASR_PYTHON") or fallback or sys.executable
     resolved = shutil.which(candidate)
     if resolved:
         return resolved
@@ -197,8 +227,15 @@ def resolve_asr_backend(requested: str, language: str = "zh") -> str:
     key = aliases.get((requested or "auto").lower())
     if not key:
         raise ValueError(f"Unsupported ASR backend: {requested}")
+    module_of = {"qwen3-asr": None, "faster-whisper": "faster_whisper",
+                 "openai-whisper": "whisper", "funasr": "funasr"}
     if key != "auto":
+        # 指定了后端：固定路径里有就用，没有再搜本机已有环境里装了它的
+        installed = qwen_available() if key == "qwen3-asr" else bool(importlib.util.find_spec(module_of[key]))
+        if not installed:
+            discovered_asr(language, key)
         return key
+    # 固定路径：显式指定 / BILI_ASR_PYTHON / 当前解释器
     if is_chinese_language(language) and qwen_available():
         return "qwen3-asr"
     for module_name, backend in (("faster_whisper", "faster-whisper"), ("whisper", "openai-whisper")):
@@ -209,6 +246,10 @@ def resolve_asr_backend(requested: str, language: str = "zh") -> str:
             return backend
     if qwen_available():
         return "qwen3-asr"
+    # 兜底：搜索本机已有的 ASR 环境并复用
+    choice = discovered_asr(language)
+    if choice:
+        return choice["backend"]
     return "openai-whisper"
 
 
@@ -616,6 +657,39 @@ def transcribe_wavs_qwen(
     return results
 
 
+def transcribe_in_python(
+    python: str,
+    manifest: list[dict],
+    out_dir: Path,
+    backend: str,
+    model_name: str,
+    language: str,
+    device: str,
+    compute_type: str,
+    force: bool,
+) -> list[dict]:
+    """在另一个已有环境里跑 faster-whisper / openai-whisper / funasr：把本模块交给那个解释器执行。"""
+    job = {"manifest": manifest, "out_dir": str(out_dir), "backend": backend, "model": model_name,
+           "language": language, "device": device, "compute_type": compute_type, "force": force}
+    code = (
+        "import json, sys; sys.path.insert(0, sys.argv[1]); import extract_bilibili as m; "
+        "j = json.loads(sys.stdin.read()); from pathlib import Path; o = Path(j['out_dir']); b = j['backend']; "
+        "r = (m.transcribe_wavs_faster_whisper(j['manifest'], o, j['model'], j['language'], j['device'], j['compute_type'], j['force']) if b == 'faster-whisper' else "
+        "m.transcribe_wavs_funasr(j['manifest'], o, j['model'], j['language'], j['device'], j['force']) if b == 'funasr' else "
+        "m.transcribe_wavs_openai_whisper(j['manifest'], o, j['model'], j['language'], j['force'])); "
+        "print('@@RESULT@@' + json.dumps(r, ensure_ascii=False))"
+    )
+    env = os.environ.copy()
+    env.setdefault("PYTHONUTF8", "1")
+    result = subprocess.run([python, "-c", code, str(Path(__file__).resolve().parent)], input=json.dumps(job),
+                            capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    marker = next((line for line in result.stdout.splitlines() if line.startswith("@@RESULT@@")), None)
+    if result.returncode != 0 or marker is None:
+        detail = result.stderr[-1600:] or result.stdout[-1600:]
+        raise RuntimeError(f"{backend} failed using {python}: {detail}")
+    return json.loads(marker[len("@@RESULT@@"):])
+
+
 def transcribe_wavs(
     manifest: list[dict],
     out_dir: Path,
@@ -634,6 +708,14 @@ def transcribe_wavs(
 ) -> list[dict]:
     add_site_packages(site_packages)
     resolved_backend = resolve_asr_backend(backend, language)
+    found = _DISCOVERED_ASR if _DISCOVERED_ASR and _DISCOVERED_ASR["backend"] == resolved_backend else None
+    if found:
+        # 模型是默认值（调用方没指定）且本机已下载同后端的模型时，直接用本地路径，不重复下载
+        if found.get("model") and model_name == asr_default_model(resolved_backend, None, None):
+            model_name = found["model"]
+        if resolved_backend != "qwen3-asr" and Path(found["python"]).resolve() != Path(sys.executable).resolve():
+            return transcribe_in_python(found["python"], manifest, out_dir, resolved_backend, model_name,
+                                        language, device, compute_type, force)
     if resolved_backend == "qwen3-asr":
         return transcribe_wavs_qwen(
             manifest,

@@ -4,7 +4,7 @@
 
 ```bash
 # 设计元数据与全部文字：主题配色字体、逐页形状样式、每段文字的字样
-.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/read_pptx.py presentation.pptx
+"$PY" "$SKILL_ROOT"/bili-pptx/scripts/read_pptx.py presentation.pptx
 
 # 原始 XML 与媒体文件
 unzip -o presentation.pptx -d unpacked/
@@ -19,7 +19,7 @@ unzip -o presentation.pptx -d unpacked/
 范围以外的页不出图逐页扫描。
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/render_preview.py $WORK/deck/deck.pptx -o $WORK/deck/preview/ --slides 3,7,12
+"$PY" "$SKILL_ROOT"/bili-pptx/scripts/render_preview.py $WORK/deck/deck.pptx -o $WORK/deck/preview/ --slides 3,7,12
 ```
 
 全量渲染（不带 `--slides`）用于读模版原件。底层就是两步，需要手动控制参数时直接用：
@@ -81,6 +81,6 @@ FONTCONFIG_PATH=/opt/homebrew/etc/fonts \
 
 ## 依赖
 
-- `python-pptx`、`Pillow`、`lxml`：建 deck、注入动画、读取 pptx（装在 `.keyframe-venv` 里）；
+- `python-pptx`、`Pillow`、`lxml`：建 deck、注入动画、读取 pptx（`$PY` 所在的环境，见调度器的「运行环境」）；
 - `LibreOffice`：pptx → PDF（`brew install --cask libreoffice`）；
 - `poppler`：PDF → 图片（`brew install poppler`）。

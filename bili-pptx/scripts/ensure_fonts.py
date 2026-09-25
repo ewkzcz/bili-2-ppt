@@ -7,8 +7,8 @@
 由打开它的软件替换显示。
 
 用法：
-    .keyframe-venv/bin/python ensure_fonts.py Cryo_Academic
-    .keyframe-venv/bin/python ensure_fonts.py PagedDaylight --check   # 只检查，不安装
+    python3 ensure_fonts.py Cryo_Academic
+    python3 ensure_fonts.py PagedDaylight --check   # 只检查，不安装
 """
 
 from __future__ import annotations

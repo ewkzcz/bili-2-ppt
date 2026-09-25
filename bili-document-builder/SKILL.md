@@ -152,9 +152,9 @@ Markdown 在 `$WORK` 里合并、规范化、校验完，再写到交付目录�
 Markdown 合并后先按模版规范化排版（空行、按分类重排条目编号），再跑校验，然后交付：
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/scripts/normalize_md.py <文件> \
-  --template bili-2-ppt/bili-document-builder/references/templates/<模版名> --in-place
-.keyframe-venv/bin/python bili-2-ppt/bili-document-builder/scripts/validate_document_output.py <文件> --template <模版名>
+"$PY" "$SKILL_ROOT"/scripts/normalize_md.py <文件> \
+  --template "$SKILL_ROOT"/bili-document-builder/references/templates/<模版名> --in-place
+"$PY" "$SKILL_ROOT"/bili-document-builder/scripts/validate_document_output.py <文件> --template <模版名>
 ```
 
 `--template auto`（默认）先按文件名后缀 `-{模版名}.md` 判定，再按各模版的 `detect` 规则判定。

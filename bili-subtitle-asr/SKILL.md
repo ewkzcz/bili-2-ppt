@@ -167,6 +167,12 @@ $PYTHON "$SKILL_DIR/scripts/process_video_part.py" \
 ## 运行依赖
 
 - 必需：Python 3、网络访问、FFmpeg/FFprobe。
+
+**环境先走固定路径，再自动搜索复用，不需要手动配置**：ASR 解释器依次取 `--qwen-python`、`$BILI_ASR_PYTHON`、
+当前解释器；这些都没有可用后端时，自动搜索本机已有的 ASR 环境（conda、pyenv、pipx、uv、项目虚拟环境等，
+向各工具查询，不写死路径）并复用，优先 GPU、优先本机已下载完整的模型；ffmpeg 不在 PATH 上时同样自动搜索。
+搜索逻辑在共用脚本 [scripts/discover_env.py](../scripts/discover_env.py)，
+`python3 scripts/discover_env.py` 可以看到搜到了哪些环境、选了哪个。
 - 可选：`yt-dlp`、`faster-whisper`、`openai-whisper`、`funasr`、`qwen-asr` 及对应模型权重。
 - 浏览器 AI 字幕需要本机有带 B站 登录态的浏览器配置文件；
   没有登录态时改走音频 ASR，不为此单独注册或索要账号。

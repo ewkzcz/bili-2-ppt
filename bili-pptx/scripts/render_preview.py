@@ -11,8 +11,8 @@ PowerPoint 的入场动画只控制「什么时候显示」，元素本身始终
 所以如果渲染出来有重叠，放映时同样会重叠，必须在这一步修掉。
 
 用法：
-    .keyframe-venv/bin/python render_preview.py deck.pptx --out-dir preview/
-    .keyframe-venv/bin/python render_preview.py deck.pptx -o preview/ --slides 3,7,12
+    python3 render_preview.py deck.pptx --out-dir preview/
+    python3 render_preview.py deck.pptx -o preview/ --slides 3,7,12
 
 自检只渲染需要复查的页（建页前评估的高风险页 + validate_deck.py --suspects 报出的页），
 不做全量逐页扫描；全量渲染只在看模版原件时用。

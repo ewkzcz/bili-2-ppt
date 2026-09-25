@@ -37,7 +37,7 @@ bili-2-ppt/bili-subtitle-asr/
 - `process_video_part.py`：处理单个分集的提取、ASR、校验和材料归档。
 - `archive_bili_materials.py`：将当前任务的字幕、音频、元数据和识别结果整理为可复用材料。
 - `validate_asr_output.py`：检查字幕 JSON 的时间轴、文本和分段结构。
-- `check_environment.py`：检查 Python、FFmpeg 和可选 ASR 后端是否可用。
+- `check_environment.py`：检查 Python、FFmpeg 和可选 ASR 后端是否可用，并列出本机可复用的环境与模型。
 
 ## 输出约定
 
@@ -50,6 +50,7 @@ bili-2-ppt/bili-subtitle-asr/
 
 - 必需：Python 3、网络访问、FFmpeg/FFprobe。
 - 可选：`yt-dlp`、`faster-whisper`、`openai-whisper`、`qwen-asr`，以及对应模型权重。
+  当前解释器没有时，自动搜索并复用本机已有的 ASR 环境与已下载的模型（见 `scripts/discover_env.py`）。
 - 网页 AI 字幕需要用户自己的已登录浏览器会话；不会把浏览器会话写入技能目录。
 
 详细参数、接口字段和失败处理约定见同目录的 `SKILL.md` 与 `references/asr-workflow.md`。

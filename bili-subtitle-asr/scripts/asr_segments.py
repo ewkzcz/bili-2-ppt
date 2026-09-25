@@ -54,7 +54,8 @@ def main() -> int:
     args.audio = args.audio.resolve(strict=True)
     args.work_dir.mkdir(parents=True, exist_ok=True)
     backend = extractor.resolve_asr_backend(args.backend, args.language)
-    model = args.model or {'qwen3-asr': 'Qwen/Qwen3-ASR-0.6B', 'funasr': 'paraformer-zh'}.get(backend, 'small')
+    # 不指定模型时用统一的默认值；本机已下载同后端的模型时，转写环节会自动换成本地路径复用
+    model = args.model or extractor.asr_default_model(backend, None, None)
     # 输入和模型配置共同决定缓存身份，修改音频或模型后不会误用旧转写。
     digest = hashlib.sha256()
     with args.audio.open('rb') as handle:

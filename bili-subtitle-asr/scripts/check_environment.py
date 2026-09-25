@@ -21,6 +21,15 @@ def main() -> None:
                                 ['extract_bilibili.py', 'extract_bilibili_opus.py', 'run_bili_note.py',
                                  'archive_bili_materials.py', 'fetch_browser_ai_subtitles.py',
                                  'run_qwen_asr.py', 'asr_segments.py']}}
+    # 固定路径之外，本机还有哪些可复用的 ASR 环境与已下载的模型（共用搜索脚本，单独拷走本子技能时跳过）
+    sys.path.insert(0, str(scripts.parents[1] / 'scripts'))
+    try:
+        import discover_env
+        chinese = True
+        result['reusable'] = {'asr': discover_env.best_asr(chinese), 'models': discover_env.discover()['models'],
+                              'ffmpeg': discover_env.discover()['ffmpeg']}
+    except ImportError:
+        pass
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 

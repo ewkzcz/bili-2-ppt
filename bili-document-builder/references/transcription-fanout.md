@@ -39,7 +39,7 @@
   加上本批要产出的每种形态的模版——Markdown 模版给 `templates/<模版名>/` 下的
   `描述.md` 与 `案例.md` 两份，deck 给 `deck-design.md`；
 - deck 批次另给本份 deck 的样式表 `deck_style.py`（主代理读模版原件后写好）与模版原件路径；
-- mermaid 的主题、配色和收尾纪律在 `bili-2-ppt/references/mermaid-style.md`，
+- mermaid 的主题、配色和收尾纪律在 `$SKILL_ROOT/references/mermaid-style.md`，
   凡是画图的批次都要一并给子代理——所有模版都指向这一份，不给它会各写各的配色；
 - 输出路径和文件格式。
 

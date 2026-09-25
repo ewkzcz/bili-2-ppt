@@ -52,11 +52,11 @@ description: 在静默后台浏览器里按 Bilibili 播放器进度条跳转采
 用 `scripts/dedupe_frames.py`：
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/bili-keyframes/scripts/dedupe_frames.py <帧目录|capture_log.jsonl> \
+"$PY" "$SKILL_ROOT"/bili-keyframes/scripts/dedupe_frames.py <帧目录|capture_log.jsonl> \
   --output-dir $WORK/keyframes/dedup --threshold 9 --max-gap 90
 ```
 
-- 需要 Pillow，用 `.keyframe-venv/bin/python` 运行。判定用灰度缩略图的平均像素差，纯 Pillow 实现，不依赖 numpy。
+- 需要 Pillow，用 `$PY` 运行（见调度器的「运行环境」）。判定用灰度缩略图的平均像素差，纯 Pillow 实现，不依赖 numpy。
 - **连续重复画面保留最后一帧**：重复画面里最后一帧才是画面定格、内容完整的那张，第一帧可能停在淡入中间态或代码刚敲到一半。
 - 缓慢平移、渐显这类「相邻差异小但整体在变」的片段会按累积差异切开，不会被整体判成重复。
 - 只比对播放器画面区域时传 `--crop x y w h`，避免网页静态装饰干扰判断。
@@ -95,7 +95,7 @@ description: 在静默后台浏览器里按 Bilibili 播放器进度条跳转采
 
 - `scripts/plan_keyframes.py`：按时长生成跳转计划；
 - `scripts/capture_keyframes.py`：选会话、启动后台浏览器、驱动跳转与截图（会话选取走
-  [bili-2-ppt/scripts/browser_session.py](../scripts/browser_session.py)）；
+  ["$SKILL_ROOT"/scripts/browser_session.py](../scripts/browser_session.py)）；
 - `scripts/cdp_capture.mjs`：实际驱动播放器的调试协议客户端；
 - `scripts/dedupe_frames.py`：画面去重与补采样提示。
 
