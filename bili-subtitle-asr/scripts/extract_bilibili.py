@@ -235,13 +235,13 @@ def resolve_asr_backend(requested: str, language: str = "zh") -> str:
         if not installed:
             discovered_asr(language, key)
         return key
-    # 固定路径：显式指定 / BILI_ASR_PYTHON / 当前解释器
+    # 固定路径：显式指定 / BILI_ASR_PYTHON / 当前解释器；中文里 SenseVoice（funasr）比 whisper 小模型准
     if is_chinese_language(language) and qwen_available():
         return "qwen3-asr"
-    for module_name, backend in (("faster_whisper", "faster-whisper"), ("whisper", "openai-whisper")):
-        if importlib.util.find_spec(module_name):
-            return backend
-    for module_name, backend in (("funasr", "funasr"),):
+    order = (("funasr", "funasr"), ("faster_whisper", "faster-whisper"), ("whisper", "openai-whisper")) \
+        if is_chinese_language(language) else \
+        (("faster_whisper", "faster-whisper"), ("whisper", "openai-whisper"), ("funasr", "funasr"))
+    for module_name, backend in order:
         if importlib.util.find_spec(module_name):
             return backend
     if qwen_available():
@@ -558,6 +558,38 @@ def funasr_text(result: object) -> str:
     return str(result or "").strip()
 
 
+# funasr 逐段识别时，把相邻的 VAD 片段并到不超过这么长（秒），太碎识别不准、太长时间戳太粗
+FUNASR_MAX_CHUNK_SECONDS = 15.0
+
+
+def _read_wav_float(path: str):
+    """读 16k 单声道 WAV 为 float32 数组（funasr 直接吃数组，不用再落临时文件）。"""
+    import wave
+    import numpy as np  # type: ignore
+
+    with wave.open(path, "rb") as handle:
+        rate = handle.getframerate()
+        frames = handle.readframes(handle.getnframes())
+        width = handle.getsampwidth()
+        channels = handle.getnchannels()
+    dtype = {1: np.int8, 2: np.int16, 4: np.int32}[width]
+    audio = np.frombuffer(frames, dtype=dtype).astype(np.float32) / float(np.iinfo(dtype).max)
+    if channels > 1:
+        audio = audio.reshape(-1, channels).mean(axis=1)
+    return audio, rate
+
+
+def _merge_spans(spans: list, max_ms: float) -> list:
+    """把 VAD 给的 [开始毫秒, 结束毫秒] 片段并成不超过 max_ms 的块。"""
+    merged: list = []
+    for begin, end in spans:
+        if merged and end - merged[-1][0] <= max_ms:
+            merged[-1][1] = end
+        else:
+            merged.append([begin, end])
+    return merged
+
+
 def transcribe_wavs_funasr(
     manifest: list[dict],
     out_dir: Path,
@@ -565,11 +597,20 @@ def transcribe_wavs_funasr(
     language: str,
     device: str,
     force: bool = False,
+    vad_model: str | None = None,
 ) -> list[dict]:
+    """SenseVoice / Paraformer：先用 VAD 切出说话片段，再逐段识别，得到带真实时间戳的 segments。"""
     from funasr import AutoModel  # type: ignore
 
+    try:
+        from funasr.utils.postprocess_utils import rich_transcription_postprocess  # type: ignore
+    except ImportError:
+        rich_transcription_postprocess = lambda text: text  # noqa: E731
+
     resolved_device = detect_device(device)
-    model = AutoModel(model=model_name, vad_model="fsmn-vad", device=resolved_device)
+    model = AutoModel(model=model_name, device=resolved_device, disable_update=True)
+    vad = AutoModel(model=vad_model or "fsmn-vad", device=resolved_device, disable_update=True)
+    lang = "zh" if is_chinese_language(language) else "auto"
     results = []
     for item in manifest:
         stem = f"p{int(item['page']):02d}_{item['cid']}"
@@ -578,15 +619,25 @@ def transcribe_wavs_funasr(
         if txt_path.exists() and not force:
             results.append({**item, "transcript_txt": str(txt_path), "transcript_json": str(json_path)})
             continue
-        raw = model.generate(input=item["wav"], language=language)
-        text = funasr_text(raw)
+        audio, rate = _read_wav_float(item["wav"])
+        spans = (vad.generate(input=item["wav"]) or [{}])[0].get("value") or [[0, int(len(audio) * 1000 / rate)]]
+        segments = []
+        for begin, end in _merge_spans(spans, FUNASR_MAX_CHUNK_SECONDS * 1000):
+            piece = audio[int(begin * rate / 1000): int(end * rate / 1000)]
+            if len(piece) < rate // 10:
+                continue
+            raw = model.generate(input=piece, language=lang, use_itn=True)
+            text = rich_transcription_postprocess(funasr_text(raw)).strip()
+            if text:
+                segments.append({"start": round(begin / 1000, 3), "end": round(end / 1000, 3), "text": text})
+        text = "".join(seg["text"] for seg in segments)
         result = {
             "backend": "funasr",
             "model": model_name,
             "device": resolved_device,
             "language": language,
             "text": text,
-            "raw": raw,
+            "segments": segments,
         }
         txt_path.write_text(text, encoding="utf-8")
         json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
@@ -644,8 +695,7 @@ def transcribe_wavs_qwen(
             "--chunk-seconds",
             str(chunk_seconds),
         ]
-        env = os.environ.copy()
-        env.setdefault("PYTHONUTF8", "1")
+        env = asr_env(model_name)
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=env)
         if result.returncode != 0:
             detail = result.stderr[-1600:] or result.stdout[-1600:]
@@ -667,20 +717,21 @@ def transcribe_in_python(
     device: str,
     compute_type: str,
     force: bool,
+    vad_model: str | None = None,
 ) -> list[dict]:
     """在另一个已有环境里跑 faster-whisper / openai-whisper / funasr：把本模块交给那个解释器执行。"""
     job = {"manifest": manifest, "out_dir": str(out_dir), "backend": backend, "model": model_name,
-           "language": language, "device": device, "compute_type": compute_type, "force": force}
+           "language": language, "device": device, "compute_type": compute_type, "force": force,
+           "vad": vad_model}
     code = (
         "import json, sys; sys.path.insert(0, sys.argv[1]); import extract_bilibili as m; "
         "j = json.loads(sys.stdin.read()); from pathlib import Path; o = Path(j['out_dir']); b = j['backend']; "
         "r = (m.transcribe_wavs_faster_whisper(j['manifest'], o, j['model'], j['language'], j['device'], j['compute_type'], j['force']) if b == 'faster-whisper' else "
-        "m.transcribe_wavs_funasr(j['manifest'], o, j['model'], j['language'], j['device'], j['force']) if b == 'funasr' else "
+        "m.transcribe_wavs_funasr(j['manifest'], o, j['model'], j['language'], j['device'], j['force'], j['vad']) if b == 'funasr' else "
         "m.transcribe_wavs_openai_whisper(j['manifest'], o, j['model'], j['language'], j['force'])); "
         "print('@@RESULT@@' + json.dumps(r, ensure_ascii=False))"
     )
-    env = os.environ.copy()
-    env.setdefault("PYTHONUTF8", "1")
+    env = asr_env(model_name)
     result = subprocess.run([python, "-c", code, str(Path(__file__).resolve().parent)], input=json.dumps(job),
                             capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     marker = next((line for line in result.stdout.splitlines() if line.startswith("@@RESULT@@")), None)
@@ -688,6 +739,43 @@ def transcribe_in_python(
         detail = result.stderr[-1600:] or result.stdout[-1600:]
         raise RuntimeError(f"{backend} failed using {python}: {detail}")
     return json.loads(marker[len("@@RESULT@@"):])
+
+
+def asr_env(model_name: str) -> dict:
+    """ASR 子进程的环境变量：本地模型走离线模式（避免启动时联网检查卡住），统一指定根证书。"""
+    env = os.environ.copy()
+    env.setdefault("PYTHONUTF8", "1")
+    if Path(str(model_name)).exists():
+        env["HF_HUB_OFFLINE"] = "1"
+        env["TRANSFORMERS_OFFLINE"] = "1"
+    if discover_env is not None and not env.get("SSL_CERT_FILE"):
+        ca = discover_env.ca_bundle()
+        if ca:
+            env["SSL_CERT_FILE"] = ca
+    return env
+
+
+def _default_models() -> set[str]:
+    return {asr_default_model(b, None, None) for b in ("qwen3-asr", "funasr", "faster-whisper", "openai-whisper")}
+
+
+def _run_backend(row: dict, manifest: list[dict], out_dir: Path, model: str, language: str, force: bool,
+                 device: str, compute_type: str, qwen_device_map: str, qwen_dtype: str,
+                 qwen_max_new_tokens: int, qwen_chunk_seconds: float) -> list[dict]:
+    backend, python = row["backend"], row.get("python") or sys.executable
+    if backend == "qwen3-asr":
+        return transcribe_wavs_qwen(manifest, out_dir, model, language, python, qwen_device_map, qwen_dtype,
+                                    qwen_max_new_tokens, qwen_chunk_seconds, force)
+    if Path(python).resolve() != Path(sys.executable).resolve():
+        return transcribe_in_python(python, manifest, out_dir, backend, model, language, device, compute_type,
+                                    force, row.get("vad"))
+    os.environ.update({k: v for k, v in asr_env(model).items() if k in ("HF_HUB_OFFLINE", "TRANSFORMERS_OFFLINE",
+                                                                          "SSL_CERT_FILE")})
+    if backend == "faster-whisper":
+        return transcribe_wavs_faster_whisper(manifest, out_dir, model, language, device, compute_type, force)
+    if backend == "funasr":
+        return transcribe_wavs_funasr(manifest, out_dir, model, language, device, force, row.get("vad"))
+    return transcribe_wavs_openai_whisper(manifest, out_dir, model, language, force)
 
 
 def transcribe_wavs(
@@ -706,34 +794,53 @@ def transcribe_wavs(
     qwen_max_new_tokens: int = 8192,
     qwen_chunk_seconds: float = 60.0,
 ) -> list[dict]:
+    """有什么用什么：按候选顺序逐个尝试，失败自动换下一个。
+
+    候选顺序：本地模型完整且库已装 > 本地模型完整但缺库（自动补装）> 需要下载模型（走镜像）；
+    同一档里固定路径（--qwen-python / BILI_ASR_PYTHON / 当前解释器）排前面。
+    backend 传 auto 时在所有后端里选，传具体后端时只在这个后端里选；调用方指定的模型原样使用。
+    """
     add_site_packages(site_packages)
-    resolved_backend = resolve_asr_backend(backend, language)
-    found = _DISCOVERED_ASR if _DISCOVERED_ASR and _DISCOVERED_ASR["backend"] == resolved_backend else None
-    if found:
-        # 模型是默认值（调用方没指定）且本机已下载同后端的模型时，直接用本地路径，不重复下载
-        if found.get("model") and model_name == asr_default_model(resolved_backend, None, None):
-            model_name = found["model"]
-        if resolved_backend != "qwen3-asr" and Path(found["python"]).resolve() != Path(sys.executable).resolve():
-            return transcribe_in_python(found["python"], manifest, out_dir, resolved_backend, model_name,
-                                        language, device, compute_type, force)
-    if resolved_backend == "qwen3-asr":
-        return transcribe_wavs_qwen(
-            manifest,
-            out_dir,
-            model_name,
-            language,
-            qwen_python,
-            qwen_device_map,
-            qwen_dtype,
-            qwen_max_new_tokens,
-            qwen_chunk_seconds,
-            force,
-        )
-    if resolved_backend == "faster-whisper":
-        return transcribe_wavs_faster_whisper(manifest, out_dir, model_name, language, device, compute_type, force)
-    if resolved_backend == "funasr":
-        return transcribe_wavs_funasr(manifest, out_dir, model_name, language, device, force)
-    return transcribe_wavs_openai_whisper(manifest, out_dir, model_name, language, force)
+    requested = aliases_of(backend)
+    user_model = model_name if model_name and model_name not in _default_models() else None
+    options = dict(device=device, compute_type=compute_type, qwen_device_map=qwen_device_map,
+                   qwen_dtype=qwen_dtype, qwen_max_new_tokens=qwen_max_new_tokens,
+                   qwen_chunk_seconds=qwen_chunk_seconds)
+
+    if discover_env is None:  # 单独拷走本子技能：只走固定路径
+        resolved = resolve_asr_backend(backend, language)
+        row = {"backend": resolved, "python": qwen_python or os.environ.get("BILI_ASR_PYTHON")}
+        return _run_backend(row, manifest, out_dir, user_model or asr_default_model(resolved, None, None),
+                            language, force, **options)
+
+    fixed = [qwen_python, os.environ.get("BILI_ASR_PYTHON"), sys.executable]
+    candidates = discover_env.asr_candidates(is_chinese_language(language),
+                                             None if requested == "auto" else requested, fixed)
+    failures = []
+    for row in candidates:
+        try:
+            if row.get("install"):
+                print(f"[asr] 给 {row['python']} 补装 {row['install']}", file=sys.stderr)
+                subprocess.run([row["python"], "-m", "pip", "install", "-q", row["install"]], check=True,
+                               env=asr_env(""))
+            model = user_model or row.get("model")
+            if not model:
+                model = discover_env.download_model(row["backend"]) or asr_default_model(row["backend"], None, None)
+            if row["backend"] == "funasr" and not row.get("vad"):
+                row["vad"] = discover_env.download_model("vad")
+            print(f"[asr] 使用 {row['backend']} @ {row['python']}，模型 {model}", file=sys.stderr)
+            return _run_backend(row, manifest, out_dir, model, language, force, **options)
+        except Exception as error:  # noqa: BLE001 —— 任何一种失败都换下一个候选
+            failures.append(f"{row['backend']} @ {row['python']}：{str(error)[-400:]}")
+            print(f"[asr] 失败，换下一个候选：{failures[-1]}", file=sys.stderr)
+    raise RuntimeError("所有 ASR 候选都失败了：\n" + "\n".join(failures or ["本机没有任何可用的 ASR 环境"]))
+
+
+def aliases_of(requested: str) -> str:
+    aliases = {"whisper": "openai-whisper", "openai": "openai-whisper", "faster": "faster-whisper",
+               "sensevoice": "funasr", "qwen": "qwen3-asr", "qwen3": "qwen3-asr"}
+    key = (requested or "auto").lower()
+    return aliases.get(key, key)
 
 
 def get_mixin_key(bvid: str | None) -> str:
@@ -1104,7 +1211,7 @@ def main() -> int:
         transcript_results = transcribe_wavs(
             manifest,
             out_dir,
-            backend,
+            args.asr_backend,
             model_name,
             site_packages,
             args.force,

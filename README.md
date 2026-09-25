@@ -133,6 +133,14 @@ https://github.com/ewkzcz/bili-2-ppt
 
 ### 依赖环境
 
+第一次使用先一键构建，它会先复用电脑上已有的 Python 环境、ASR 模型和 ffmpeg，缺的再自动补齐（模型走国内镜像多连接下载，断点续传）：
+
+```bash
+python3 scripts/discover_env.py --setup
+```
+
+下载策略与手动兜底见 [references/env-setup.md](references/env-setup.md)。
+
 依赖按需分层，缺哪层就少一条路线，不影响其它部分：
 
 | 能力 | 需要什么 |

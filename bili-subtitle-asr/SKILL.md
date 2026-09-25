@@ -168,9 +168,15 @@ $PYTHON "$SKILL_DIR/scripts/process_video_part.py" \
 
 - 必需：Python 3、网络访问、FFmpeg/FFprobe。
 
-**环境先走固定路径，再自动搜索复用，不需要手动配置**：ASR 解释器依次取 `--qwen-python`、`$BILI_ASR_PYTHON`、
-当前解释器；这些都没有可用后端时，自动搜索本机已有的 ASR 环境（conda、pyenv、pipx、uv、项目虚拟环境等，
-向各工具查询，不写死路径）并复用，优先 GPU、优先本机已下载完整的模型；ffmpeg 不在 PATH 上时同样自动搜索。
+**ASR 有什么用什么，不需要手动配置**：按「本地模型完整且库已装 > 本地模型完整但缺库（自动补装）>
+需要下载模型」的顺序逐个尝试，失败自动换下一个；同一档里固定路径（`--qwen-python`、`$BILI_ASR_PYTHON`、
+当前解释器）排前面。环境向 conda、pyenv、pipx、uv、项目虚拟环境等工具查询，不写死路径；
+模型下载依次走 ModelScope、hf-mirror、HuggingFace，有 aria2c 就多连接下载；ffmpeg 不在 PATH 上时同样自动搜索。
+SenseVoice（funasr）先用 VAD 切出说话片段再逐段识别，输出带真实时间戳的 `segments`。
+
+第一次在一台机器上用，先跑一键构建（复用已有的，缺的自动补齐）：
+`python3 ../scripts/discover_env.py --setup`。模型下载的镜像、多连接、断点续传与兜底策略见
+[references/env-setup.md](../references/env-setup.md)。
 搜索逻辑在共用脚本 [scripts/discover_env.py](../scripts/discover_env.py)，
 `python3 scripts/discover_env.py` 可以看到搜到了哪些环境、选了哪个。
 - 可选：`yt-dlp`、`faster-whisper`、`openai-whisper`、`funasr`、`qwen-asr` 及对应模型权重。

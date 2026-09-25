@@ -120,22 +120,47 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
   不假设从哪个目录运行；
 - `$PY`：运行本技能 Python 脚本的解释器，按下面的顺序自动决定。
 
-**先走固定路径**：`$BILI_PYTHON` 环境变量指定的解释器；没设就用当前的 `python3`（Windows 是 `python`）。
-它装齐了这一步要用的依赖（建 PPT：`python-pptx`、`Pillow`、`lxml`；截图：`Pillow`、`websocket-client`）就直接用。
-
-**再兜底搜索复用**：固定路径缺依赖时，用共用脚本搜本机已有的环境，找到就用：
+**开工第一件事是构建依赖环境，先搜索复用，搜完之前不许新建任何环境**（可以和开工提问同时做，放后台跑）：
 
 ```bash
-PY="$(python3 "$SKILL_ROOT"/scripts/discover_env.py --need tools --ensure)"
+python3 "$SKILL_ROOT"/scripts/discover_env.py --setup
 ```
 
-它向各环境管理工具查询已有环境（conda、pyenv、pipx、uv、virtualenvwrapper、Windows 的 `py` 启动器，
-以及项目目录里的虚拟环境），不写死任何安装路径；都没有时自动建一个共用 venv 装好依赖，之后复用。
+它先复用本机已有的环境与模型，缺的工具依赖、ASR 模型、ffmpeg 再自动补齐，重复运行只补缺。
+镜像加速、多连接、断点续传、卡住自动续传、校验与各级兜底的完整做法见
+[references/env-setup.md](references/env-setup.md)——环境或下载出问题时先读它，不要临场摸索。
+只看现状不改动：`python3 "$SKILL_ROOT"/scripts/discover_env.py`。
 
-**ASR 同样如此，不需要手动指定**：`extract_bilibili.py` 先用 `--qwen-python` / `$BILI_ASR_PYTHON` / 当前解释器，
-没有可用后端时自动搜索本机装了 Qwen3-ASR / faster-whisper / openai-whisper / funasr 的环境复用，
-优先 GPU（CUDA / Apple MPS），并优先用本机已下载完整的模型，不重复下载。ffmpeg 不在 PATH 上时也会自动搜到。
-搜索结果缓存在 `<系统临时目录>/bili-2-ppt/env.json`，24 小时内复用。
+它向各环境管理工具查询已有环境（conda、pyenv、pipx、uv、virtualenvwrapper、Windows 的 `py` 启动器，
+以及项目目录里的虚拟环境）和已下载的模型，不写死任何安装路径，打印每个用途选中的环境。
+结果缓存在 `<系统临时目录>/bili-2-ppt/env.json`，24 小时内复用。
+
+**Python 工具环境**：先走固定路径——`$BILI_PYTHON` 指定的解释器，没设就用当前的 `python3`（Windows 是 `python`），
+装齐了这一步的依赖就直接用；缺依赖时复用搜到的已有环境；都没有才自动建一个共用 venv 一次装齐，之后复用：
+
+```bash
+PY="$(python3 "$SKILL_ROOT"/scripts/discover_env.py --need capture --ensure)"   # 截图：Pillow、websocket-client、certifi
+PY="$(python3 "$SKILL_ROOT"/scripts/discover_env.py --need pptx --ensure)"      # 建 PPT：python-pptx、Pillow、lxml
+```
+
+不往其他项目的环境里补装工具依赖，缺什么装进共用 venv。
+
+**ASR 有什么用什么，不需要手动指定**：`extract_bilibili.py` 按下面的顺序逐个尝试，失败自动换下一个：
+
+1. 本地模型已下载完整、环境里已装好后端库的组合；
+2. 本地模型已下载完整、有带 torch 的环境但缺后端库——自动补装这一个库再用；
+3. 环境里有后端库、模型需要下载——走镜像下载（见下）。
+
+同一档里固定路径（`--qwen-python` / `$BILI_ASR_PYTHON` / 当前解释器）排前面；后端按中文优先级
+Qwen3-ASR > SenseVoice（funasr）> faster-whisper > openai-whisper，GPU（CUDA / Apple MPS）优先。
+用本地模型时自动开离线模式，避免启动时联网检查卡住。ffmpeg 不在 PATH 上时也会自动搜到。
+
+**模型下载**：镜像优先（ModelScope → hf-mirror → HuggingFace），多个镜像的地址一起交给 aria2c 16 连接下载，
+慢连接自动重连、进度卡住自动断点续传、下完核对 SHA256，没有 aria2c 退回 curl 续传；pip 装包默认源失败换国内镜像。
+**汇报下载进度只认 aria2c 自己报的数字**（已下 / 总量 / 速度 / 剩余时间）——多连接下载会先把文件撑到完整大小，
+文件大小和 `du` 都不是真实进度。细节见 [references/env-setup.md](references/env-setup.md)。
+
+长时间的 ASR 或下载在后台跑，同时去做不依赖它的准备（读后续技能、读 PPT 模版、写样式表）。
 
 这一步**不向用户提问**，搜到了什么、用了哪个环境记进验收报告即可。
 只有固定路径和搜索都没有、自动安装也失败时，才算「无法继续」的阻塞。

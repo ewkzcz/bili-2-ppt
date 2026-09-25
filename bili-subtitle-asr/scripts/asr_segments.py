@@ -100,7 +100,7 @@ def main() -> int:
                 with wave.open(str(wav), 'wb') as target:
                     target.setparams(source.getparams()); target.writeframes(raw)
                 manifest = [{'page': 1, 'cid': index, 'wav': str(wav)}]
-                outputs = extractor.transcribe_wavs(manifest, folder, backend, model, [], force=True, language=args.language)
+                outputs = extractor.transcribe_wavs(manifest, folder, args.backend, model, [], force=True, language=args.language)
                 result = json.loads(Path(outputs[0]['transcript_json']).read_text(encoding='utf-8'))
                 merge_chunks([{'offset': offset, 'duration': length, 'result': result}], duration)
                 pending = folder / 'result.pending.json'
