@@ -6,17 +6,20 @@
 
 文字样式（字典）：
     font        字体名，或 {"latin": 西文字体, "ea": 东亚字体}
-    size        字号 pt；bold / italic 布尔；color "#RRGGBB"
+    size        字号 pt；bold / italic 布尔；color "#RRGGBB"；alpha 文字不透明度%
+    gradient    渐变文字，格式同形状样式的 gradient（给了就不用 color）
     spc         字距，与 pptx 里 a:rPr 的 spc 同单位（1/100 pt）
     highlight   荧光笔底色 "#RRGGBB"
+    outline     文字描边 {"color": "#RRGGBB", "pt": 线宽}，配浅色 color 即镂空大字
     caps        True 时转大写
     align       left / center / right；valign top / middle / bottom
-    spacing     行距倍数；space_after 段后 pt
+    spacing     行距倍数；leading 固定行距 pt（模版 lnSpc 是 spcPts 时用它）；space_before / space_after 段前 / 段后 pt
     emph        **短语** 的覆盖样式（默认只加粗），如 {"bold": True, "color": "#1558E8"}
 
 形状样式（字典）：
     fill "#RRGGBB"、alpha 不透明度%、gradient {"type": "linear"/"radial", "angle", "center",
-    "stops": [[位置%, 颜色, 不透明度%], ...]}、line / line_pt / line_alpha / dash、
+    "stops": [[位置%, 颜色, 不透明度%], ...]}、line / line_pt / line_alpha、
+    dash（True 为 dash，也可写 prstDash 值如 "sysDot" / "lgDash"）、
     radius 圆角英寸（"full" 为胶囊或圆）、shadow {"blur", "dist", "dir", "color", "alpha"}、rotation
 
 所有坐标、尺寸单位为英寸，画布 13.333 × 7.5。anim=N 把动画组号写进形状名，
@@ -32,7 +35,6 @@ from pathlib import Path
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-from pptx.enum.dml import MSO_LINE_DASH_STYLE
 from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml import parse_xml
@@ -65,8 +67,17 @@ def blank(prs):
     return prs.slides.add_slide(prs.slide_layouts[6])
 
 
-def background(slide, *, color: str | None = None, image=None) -> None:
-    """页面背景：纯色，或一张铺满的背景图（路径或字节；放进页面背景，不占形状）。"""
+def background(slide, *, color: str | None = None, image=None, gradient: dict | None = None) -> None:
+    """页面背景：纯色、渐变（格式同形状样式的 gradient），或一张铺满的背景图（路径或字节；放进页面背景，不占形状）。"""
+    if gradient is not None:
+        c_sld = slide._element.find(qn("p:cSld"))
+        existing = c_sld.find(qn("p:bg"))
+        if existing is not None:
+            c_sld.remove(existing)
+        c_sld.insert(0, parse_xml(
+            f'<p:bg {nsdecls("p", "a")}><p:bgPr>{_gradient_xml(gradient)}<a:effectLst/>'
+            f'</p:bgPr></p:bg>'))
+        return
     if image is None:
         fill = slide.background.fill
         fill.solid()
@@ -154,7 +165,7 @@ def _name_shape(shape, anim) -> None:
 
 
 def _set_run(run, style: dict) -> None:
-    """按文字样式设置一个文字片段：字号、粗斜体、颜色、字距、高亮与西文 / 东亚字体槽。"""
+    """按文字样式设置一个文字片段：字号、粗斜体、颜色 / 渐变 / 不透明度、描边、字距、高亮与西文 / 东亚字体槽。"""
     font = style.get("font", "Arial")
     latin, ea = (font["latin"], font.get("ea", font["latin"])) if isinstance(font, dict) \
         else (font, font)
@@ -163,9 +174,15 @@ def _set_run(run, style: dict) -> None:
         run.font.size = Pt(style["size"])
     run.font.bold = bool(style.get("bold"))
     run.font.italic = bool(style.get("italic"))
-    if style.get("color"):
-        run.font.color.rgb = RGBColor.from_string(_hex(style["color"]))
     r_pr = run._r.get_or_add_rPr()
+    if style.get("gradient"):
+        for element in r_pr.findall(qn("a:solidFill")):
+            r_pr.remove(element)
+        r_pr.insert(0, parse_xml(_gradient_xml(style["gradient"])))
+    elif style.get("color"):
+        run.font.color.rgb = RGBColor.from_string(_hex(style["color"]))
+        if style.get("alpha") is not None:
+            _alpha(r_pr.find(qn("a:solidFill")), style["alpha"])
     if style.get("spc"):
         r_pr.set("spc", str(int(style["spc"])))
     latin_el = r_pr.find(qn("a:latin"))
@@ -175,6 +192,12 @@ def _set_run(run, style: dict) -> None:
         if existing is not None:
             r_pr.remove(existing)
         latin_el.addnext(r_pr.makeelement(qn(tag), {"typeface": face}))
+    if style.get("outline"):
+        # 文字描边 a:ln 在 schema 里排在 rPr 第一位，先于填充
+        outline = style["outline"]
+        r_pr.insert(0, parse_xml(
+            f'<a:ln {nsdecls("a")} w="{int(outline.get("pt", 1) * 12700)}"><a:solidFill>'
+            f'<a:srgbClr val="{_hex(outline["color"])}"/></a:solidFill></a:ln>'))
     if style.get("highlight"):
         # highlight 在 schema 里排在填充之后、字体之前
         latin_el.addprevious(parse_xml(
@@ -195,8 +218,12 @@ def write_runs(paragraph, text: str, style: dict) -> None:
 
 def _format_paragraph(paragraph, style: dict) -> None:
     paragraph.alignment = _ALIGN[style.get("align", "left")]
-    if style.get("spacing"):
+    if style.get("leading"):
+        paragraph.line_spacing = Pt(style["leading"])
+    elif style.get("spacing"):
         paragraph.line_spacing = style["spacing"]
+    if style.get("space_before"):
+        paragraph.space_before = Pt(style["space_before"])
     if style.get("space_after"):
         paragraph.space_after = Pt(style["space_after"])
 
@@ -229,7 +256,8 @@ def textbox(slide, text, x, y, w, h, style: dict, *, wrap=True, anim=None, margi
 
 def bullets(slide, items, x, y, w, h, style: dict, *, bullet: dict, term: dict | None = None,
             anim=None):
-    """一列要点。bullet 定项目符号 {"char", "color", "scale", "font", "indent"(em)}；
+    """一列要点。bullet 定项目符号 {"char", "color", "scale", "font", "indent"(em)}，
+    编号列表写 {"auto": "arabicPeriod", "start": 1}（auto 取 buAutoNum 的 type 值）；
 
     term 给出时，「术语：解释」的术语部分按 term 覆盖样式写。
     """
@@ -254,7 +282,13 @@ def bullets(slide, items, x, y, w, h, style: dict, *, bullet: dict, term: dict |
                                      {"val": str(int(bullet.get("scale", 1.0) * 100000))}))
         if bullet.get("font"):
             p_pr.append(p_pr.makeelement(qn("a:buFont"), {"typeface": bullet["font"]}))
-        p_pr.append(p_pr.makeelement(qn("a:buChar"), {"char": bullet.get("char", "•")}))
+        if bullet.get("auto"):
+            # 每段写明自己的序号（同模版原件），各家渲染器都不会把编号接成 1、1、1
+            number = bullet.get("start", 1) + index
+            attrs = {"type": bullet["auto"], **({"startAt": str(number)} if number != 1 else {})}
+            p_pr.append(p_pr.makeelement(qn("a:buAutoNum"), attrs))
+        else:
+            p_pr.append(p_pr.makeelement(qn("a:buChar"), {"char": bullet.get("char", "•")}))
         head, colon, tail = item.partition("：")
         if term and colon and 0 < len(head) <= 16 and "**" not in head:
             write_runs(paragraph, head + colon, {**style, "bold": True, **term})
@@ -271,8 +305,8 @@ def _alpha(parent, alpha) -> None:
     srgb.append(srgb.makeelement(qn("a:alpha"), {"val": str(int(alpha * 1000))}))
 
 
-def _gradient(target, gradient: dict) -> None:
-    """线性或径向渐变填充；径向可用 center [x%, y%] 偏移高光位置。"""
+def _gradient_xml(gradient: dict) -> str:
+    """线性或径向渐变的 a:gradFill；径向可用 center [x%, y%] 偏移高光位置。"""
     stops = "".join(
         f'<a:gs pos="{int(pos * 1000)}"><a:srgbClr val="{_hex(value)}">'
         f'<a:alpha val="{int((rest[0] if rest else 100) * 1000)}"/></a:srgbClr></a:gs>'
@@ -283,8 +317,13 @@ def _gradient(target, gradient: dict) -> None:
                  f'r="{int((100 - cx) * 1000)}" b="{int((100 - cy) * 1000)}"/></a:path>')
     else:
         shade = f'<a:lin ang="{int(gradient.get("angle", 0) * 60000)}" scaled="0"/>'
-    grad = parse_xml(f'<a:gradFill {nsdecls("a")} rotWithShape="1"><a:gsLst>{stops}</a:gsLst>'
-                     f'{shade}</a:gradFill>')
+    return (f'<a:gradFill {nsdecls("a")} rotWithShape="1"><a:gsLst>{stops}</a:gsLst>'
+            f'{shade}</a:gradFill>')
+
+
+def _gradient(target, gradient: dict) -> None:
+    """形状的渐变填充。"""
+    grad = parse_xml(_gradient_xml(gradient))
     sp_pr = target.fill._xPr
     for tag in ("a:noFill", "a:solidFill", "a:gradFill"):
         for element in sp_pr.findall(qn(tag)):
@@ -307,6 +346,22 @@ def _shadow(target, spec: dict) -> None:
     sp_pr.append(effect)
 
 
+def _dash(line_format, dash) -> None:
+    """虚线：True 为 dash，字符串按 prstDash 的值写（sysDot、lgDash……）。"""
+    ln = line_format._get_or_add_ln()
+    for element in ln.findall(qn("a:prstDash")):
+        ln.remove(element)
+    value = "dash" if dash is True else str(dash)
+    element = ln.makeelement(qn("a:prstDash"), {"val": value})
+    # prstDash 排在填充之后、端点 / 连接样式之前
+    anchor = next((ln.find(qn(t)) for t in ("a:round", "a:bevel", "a:miter", "a:headEnd",
+                                            "a:tailEnd") if ln.find(qn(t)) is not None), None)
+    if anchor is not None:
+        anchor.addprevious(element)
+    else:
+        ln.append(element)
+
+
 def _line_style(target, style: dict) -> None:
     if not style.get("line"):
         target.line.fill.background()
@@ -316,7 +371,7 @@ def _line_style(target, style: dict) -> None:
     if style.get("line_alpha") is not None:
         _alpha(target.line._get_or_add_ln().find(qn("a:solidFill")), style["line_alpha"])
     if style.get("dash"):
-        target.line.dash_style = MSO_LINE_DASH_STYLE.DASH
+        _dash(target.line, style["dash"])
 
 
 def shape(slide, x, y, w, h, style: dict, *, kind="rect", anim=None):
@@ -356,18 +411,19 @@ def shape(slide, x, y, w, h, style: dict, *, kind="rect", anim=None):
 
 def line(slide, x1, y1, x2, y2, *, color: str, pt: float = 1.0, tail=False, head=False,
          dash=False, anim=None):
-    """一根直线；tail / head 在终点 / 起点画实心箭头。"""
+    """一根直线；tail / head 在终点 / 起点画箭头（True 为实心三角，也可写 arrow / stealth / oval 等）；
+    dash 同形状样式。"""
     connector = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Inches(x1), Inches(y1),
                                            Inches(x2), Inches(y2))
     connector.line.color.rgb = RGBColor.from_string(_hex(color))
     connector.line.width = Pt(pt)
     if dash:
-        connector.line.dash_style = MSO_LINE_DASH_STYLE.DASH
+        _dash(connector.line, dash)
     ln = connector.line._get_or_add_ln()
-    if head:
-        ln.append(ln.makeelement(qn("a:headEnd"), {"type": "triangle", "w": "med", "len": "med"}))
-    if tail:
-        ln.append(ln.makeelement(qn("a:tailEnd"), {"type": "triangle", "w": "med", "len": "med"}))
+    for tag, end in (("a:headEnd", head), ("a:tailEnd", tail)):
+        if end:
+            ln.append(ln.makeelement(qn(tag), {"type": "triangle" if end is True else str(end),
+                                               "w": "med", "len": "med"}))
     _name_shape(connector, anim)
     return connector
 
@@ -392,6 +448,89 @@ def picture(slide, image, x, y, w, h, *, frame: dict | None = None, anim=None):
             _shadow(pic, frame["shadow"])
     _name_shape(pic, anim)
     return pic
+
+
+# ── 表格 ──────────────────────────────────────────────────────────────
+
+_TABLE_ANCHOR = {"top": "t", "middle": "ctr", "bottom": "b"}
+
+
+def _cell_border(side: dict | None, tag: str):
+    if not side:
+        return parse_xml(f'<{tag} {nsdecls("a")} w="0"><a:noFill/></{tag}>')
+    dash = side.get("dash")
+    dash_val = "dash" if dash is True else (dash or "solid")
+    return parse_xml(
+        f'<{tag} {nsdecls("a")} w="{int(side.get("pt", 0.75) * 12700)}" cap="flat" cmpd="sng" '
+        f'algn="ctr"><a:solidFill><a:srgbClr val="{_hex(side["color"])}"/></a:solidFill>'
+        f'<a:prstDash val="{dash_val}"/><a:round/></{tag}>')
+
+
+def table(slide, rows, x, y, widths, heights, *, text: dict, cell: dict | None = None,
+          head_text: dict | None = None, head_cell: dict | None = None, head_rows=1, anim=None):
+    """原生表格。rows 是二维字符串（**短语** 按 emph 强调）；widths / heights 是列宽 / 行高英寸
+    （行高也可给一个数，所有行同高）。
+
+    text 是正文单元格的文字样式，head_text 覆盖表头（前 head_rows 行）。
+    cell / head_cell 是单元格样式：fill、alpha、pad [左, 上, 右, 下] 英寸、valign、
+    border 四边统一 {"color", "pt", "dash"}，或按边给 {"top", "bottom", "left", "right"}（不给的边无线），
+    zebra 隔行底色（只对正文行）。
+    """
+    heights = [heights] * len(rows) if isinstance(heights, (int, float)) else list(heights)
+    frame = slide.shapes.add_table(len(rows), len(widths), Inches(x), Inches(y),
+                                   Inches(sum(widths)), Inches(sum(heights)))
+    tbl = frame.table
+    # 去掉 python-pptx 默认套的主题表格样式，底色、框线只按调用方给的画
+    tbl_pr = tbl._tbl.tblPr
+    for attr in ("firstRow", "bandRow"):
+        tbl_pr.attrib.pop(attr, None)
+    style_id = tbl_pr.find(qn("a:tableStyleId"))
+    if style_id is not None:
+        tbl_pr.remove(style_id)
+    for index, width in enumerate(widths):
+        tbl.columns[index].width = Inches(width)
+    for index, height in enumerate(heights):
+        tbl.rows[index].height = Inches(height)
+    body_cell, head_cell = cell or {}, {**(cell or {}), **(head_cell or {})}
+    for r, values in enumerate(rows):
+        is_head = r < head_rows
+        spec = head_cell if is_head else body_cell
+        style = {**text, **(head_text or {})} if is_head else text
+        for c, value in enumerate(values):
+            target = tbl.cell(r, c)
+            frame_text = target.text_frame
+            frame_text.word_wrap = True
+            _format_paragraph(frame_text.paragraphs[0], style)
+            for index, content in enumerate(str(value).split("\n")):
+                paragraph = frame_text.paragraphs[0] if index == 0 else frame_text.add_paragraph()
+                _format_paragraph(paragraph, style)
+                write_runs(paragraph, content, style)
+            tc_pr = target._tc.get_or_add_tcPr()
+            pad = spec.get("pad", (0.08, 0.04, 0.08, 0.04))
+            for key, value_in in zip(("marL", "marT", "marR", "marB"), pad):
+                tc_pr.set(key, str(int(Inches(value_in))))
+            tc_pr.set("anchor", _TABLE_ANCHOR[spec.get("valign", "middle")])
+            for child in list(tc_pr):
+                tc_pr.remove(child)
+            border = spec.get("border")
+            per_side = border if border and not border.get("color") else \
+                {side: border for side in ("left", "right", "top", "bottom")} if border else {}
+            for side, tag in (("left", "a:lnL"), ("right", "a:lnR"), ("top", "a:lnT"),
+                              ("bottom", "a:lnB")):
+                tc_pr.append(_cell_border(per_side.get(side), tag))
+            fill = spec.get("fill")
+            if not is_head and spec.get("zebra") and (r - head_rows) % 2 == 1:
+                fill = spec["zebra"]
+            if fill:
+                solid = parse_xml(f'<a:solidFill {nsdecls("a")}><a:srgbClr val="{_hex(fill)}"/>'
+                                  f'</a:solidFill>')
+                if spec.get("alpha") is not None:
+                    _alpha(solid, spec["alpha"])
+                tc_pr.append(solid)
+            else:
+                tc_pr.append(parse_xml(f'<a:noFill {nsdecls("a")}/>'))
+    _name_shape(frame, anim)
+    return frame
 
 
 # ── 代码 ──────────────────────────────────────────────────────────────

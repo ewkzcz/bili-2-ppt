@@ -9,7 +9,9 @@
 - **动画声明**：anim-N 的组号是不是 1..N 连续，一页分了太多步没有；
 - **排版硬伤**：形状出框、文字形状互相压住、中文没设东亚字体（会掉回宋体）；
 - **字体**：排版字体里有没有出现禁止使用的黑体、宋体这类系统默认中文字体；
-- **位图**：学习笔记 deck 以真实画面为主体，这里只拦「一页堆太多张、没做过取舍」的情况。
+- **位图**：学习笔记 deck 以真实画面为主体，这里只拦「一页堆太多张、没做过取舍」的情况；
+- **特殊样式复刻**：模版用到的文字描边、渐变字、固定行距、投影、虚线这类视觉签名，deck 里一处都没有就报错
+  （样式表漏抄了），确属有意不用的用 --allow-missing 声明；表格、编号列表这类取决于内容的只提示。
 
 这里查的都是从 XML 就能确定的事实。文字压线、留白不均这类只有看图才知道的，
 跑 render_preview.py 出图后人工看。
@@ -31,9 +33,14 @@ TEMPLATES_DIR = Path(__file__).resolve().parents[1] / "references"
 TEMPLATE_PALETTE: set[str] = set()
 # 当前受检 deck 所用模版原件用到的全部字体名
 TEMPLATE_FONTS: set[str] = set()
+# 模版原件用到的特殊样式 → 出现的页
+TEMPLATE_EFFECTS: dict[str, list[int]] = {}
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.ns import qn
 from pptx.util import Emu
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pptx_effects import effects_of, how_to, signature  # noqa: E402
 
 
 # 交付物无感约束的词表在 bili-2-ppt/references/delivery-banlist.json，
@@ -538,10 +545,30 @@ def read_template(prs) -> None:
     if not name or not source.is_file():
         raise SystemExit(f"deck 没有记录可用的模版名（文档属性 category = {name!r}），"
                          "建 deck 时用 deck_kit.new_deck(template=...) 写入")
-    for slide in Presentation(str(source)).slides:
+    for number, slide in enumerate(Presentation(str(source)).slides, 1):
+        for effect in effects_of(slide._element):
+            TEMPLATE_EFFECTS.setdefault(effect, []).append(number)
         xml = slide._element.xml
         TEMPLATE_PALETTE.update(v.upper() for v in re.findall(r'srgbClr val="([0-9A-Fa-f]{6})"', xml))
         TEMPLATE_FONTS.update(re.findall(r'typeface="([^"+][^"]*)"', xml))
+
+
+def check_effects(prs, allowed: set[str], errors: list, warnings: list) -> None:
+    """模版用到的特殊样式，deck 里至少要复刻出一处。"""
+    used = set()
+    for slide in prs.slides:
+        used |= effects_of(slide._element)
+    name = prs.core_properties.category
+    for effect, pages in TEMPLATE_EFFECTS.items():
+        if effect in used or effect in allowed:
+            continue
+        where = ",".join(map(str, pages[:8]))
+        message = (f"模版 {name} 第 {where} 页用了「{effect}」，deck 里一处都没有："
+                   f"样式表按 {how_to(effect)} 补上")
+        if signature(effect):
+            errors.append(message + "；确属有意不用的，用 --allow-missing " + effect + " 声明")
+        else:
+            warnings.append(message + "（本份内容用不到可忽略）")
 
 
 def find_off_theme_colors(slide) -> list[str]:
@@ -565,6 +592,11 @@ def main() -> int:
         action="store_true",
         help="允许还没注入动画（此时只查文字与排版，不要求 anim 标记）",
     )
+    parser.add_argument(
+        "--allow-missing",
+        default="",
+        help="有意不复刻的模版特殊样式，逗号分隔（如 旋转,背景图）",
+    )
     args = parser.parse_args()
 
     if not args.pptx.is_file():
@@ -578,6 +610,9 @@ def main() -> int:
         check_slide(prs, slide, index, errors, warnings)
         for index, slide in enumerate(prs.slides)
     ]
+
+    check_effects(prs, {x.strip() for x in args.allow_missing.split(",") if x.strip()},
+                  errors, warnings)
 
     animated_total = sum(item["animated_shapes"] for item in stats)
     picture_total = sum(item["pictures"] for item in stats)

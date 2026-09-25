@@ -3,7 +3,7 @@
 ## 读取 pptx
 
 ```bash
-# 设计元数据与全部文字：主题配色字体、逐页形状样式、每段文字的字样
+# 设计元数据与全部文字：主题配色字体、逐页形状样式、每段文字的字样、表格单元格，末尾是特殊样式清单
 "$PY" "$SKILL_ROOT"/bili-pptx/scripts/read_pptx.py presentation.pptx
 
 # 原始 XML 与媒体文件
@@ -44,6 +44,15 @@ FONTCONFIG_PATH=/opt/homebrew/etc/fonts \
 ```
 
 `render_preview.py` 已内置这项设置。渲染图中缺中文时，先检查这一项。
+
+### LibreOffice 画不出来的效果
+
+LibreOffice 渲染不出**文字描边**（镂空字只剩浅色填充）和**渐变文字**（成了单色），
+模版原件自己的这两种效果在预览图里也看不到。所以：
+
+- 读模版时不能只看预览图定样式，以 `read_pptx.py` 的输出和特殊样式清单为准；
+- 看图自检时这两种效果「看起来没有」不算问题，也不能反过来用看图确认它们做出来了——
+  由 `validate_deck.py` 的特殊样式核对和 `read_pptx.py` 读回 `outline=` / `gradient(` 来确认。
 
 ### 交给子代理看图
 

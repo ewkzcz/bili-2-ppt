@@ -63,8 +63,10 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
      "$SKILL_ROOT"/bili-pptx/references/<模版名>.pptx -o $WORK/deck/template-preview/
    ```
 
-2. **读元数据**：列出主题配色与字体、每页背景、每个形状的坐标 / 填充 / 描边 / 圆角 / 投影、
-   每段文字的字体 / 字号 / 颜色 / 字距：
+2. **读元数据**：列出主题配色与字体、每页背景、每个形状的坐标 / 填充 / 描边 / 圆角 / 投影 / 旋转 / 箭头、
+   每段文字的字体 / 字号 / 颜色或渐变 / 字距 / 描边 / 高亮、段落的行距 / 段距 / 编号、表格的单元格样式，
+   末尾是**特殊样式清单**（文字描边、渐变字、半透明、固定行距、投影、虚线、箭头、表格……及出现的页）
+   和同名 html 里的 CSS 特效：
 
    ```bash
    "$PY" "$SKILL_ROOT"/bili-pptx/scripts/read_pptx.py \
@@ -75,6 +77,9 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 3. **写样式表**：把读出的设计语言写成本份 deck 的 `deck_style.py`，放在 `$WORK/deck/`（系统临时目录下，不放进技能仓库）：
    - `TEMPLATE`（模版名）、`FONTS`（至少 `heading` / `body` / `mono`，每个是 `{"latin", "ea"}`）；
    - 颜色、文字样式、形状样式的取值（`deck_kit` 的样式字典格式）；
+   - **特殊样式清单逐项落进样式表**：清单每一项右边写着 `deck_kit` 的写法，照着写进对应的样式
+     （如章节大号数字的 `outline`、封面标题的 `gradient`、表格的 `table()` 样式）。
+     **只看字号颜色会漏掉效果**：浅色填充 + 深色描边的镂空数字，只抄填充色就成了一块看不见的浅色字；
    - 本份 deck 共用的页面外壳函数：开页（背景）、版头（眉标、标题、结论句、压线）、版脚（页码、进度），
      封面 / 目录 / 章节页的母题画法。页码与总页数取自页清单；
    - 字号按 deck-design 的教程下限抬档，层级比例照原件；
@@ -91,11 +96,12 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 | 接口 | 用途 |
 | --- | --- |
 | `new_deck(title=, template=)` / `blank(prs)` | 建 16:9 空 deck（模版名记进文档属性，校验按它核对配色）/ 加空白页 |
-| `background(slide, color= / image=)` | 纯色背景，或铺满的背景纹理图 |
-| `shape(slide, x, y, w, h, style, kind=)` | 矩形 / 圆角矩形 / 椭圆：填充、透明度、渐变、描边、圆角、投影 |
-| `textbox(slide, text, x, y, w, h, style)` | 文字；`**短语**` 按 `emph` 强调，段内可混排多种样式 |
-| `bullets(slide, items, x, y, w, h, style, bullet=, term=)` | 要点列表，「术语：解释」的术语单独强调 |
-| `line(slide, x1, y1, x2, y2, color=, pt=, tail=)` | 连线与箭头 |
+| `background(slide, color= / gradient= / image=)` | 纯色、渐变背景，或铺满的背景纹理图 |
+| `shape(slide, x, y, w, h, style, kind=)` | 矩形 / 圆角矩形 / 椭圆：填充、透明度、渐变、描边、虚线、圆角、投影、旋转 |
+| `textbox(slide, text, x, y, w, h, style)` | 文字；`**短语**` 按 `emph` 强调，段内可混排多种样式；字样支持描边 `outline`、渐变 `gradient`、半透明 `alpha`、高亮、固定行距 `leading` |
+| `bullets(slide, items, x, y, w, h, style, bullet=, term=)` | 要点 / 编号列表（`bullet={"auto": "arabicPeriod"}`），「术语：解释」的术语单独强调 |
+| `table(slide, rows, x, y, widths, heights, text=, cell=, head_text=, head_cell=)` | 原生表格：表头 / 正文样式、底色、斑马纹、四边框线、内边距 |
+| `line(slide, x1, y1, x2, y2, color=, pt=, tail=, head=, dash=)` | 连线与箭头、虚线 |
 | `picture(slide, image, x, y, w, h, frame=)` | 图片等比缩放居中，带相框描边 / 投影 |
 | `code_block(slide, code, x, y, w, h, box=, style=, syntax=)` | 代码块，关键字 / 字符串 / 数值 / 注释着色 |
 | `text_width` / `text_height` / `fit_size` | 估算文字宽高，先量再定框 |
@@ -161,7 +167,9 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
    ```
 
    查禁用词、占位符残留、动画声明与形状 id 的对应、组号连续性、形状出框、中文字体、
-   模版原件以外的颜色。这是**第 1 层代码读取校验**，整副 deck 全量跑，**报出的错误全部修掉**，
+   模版原件以外的颜色，以及**特殊样式有没有复刻**：模版用了的视觉签名（文字描边、渐变字、半透明、
+   投影、虚线、旋转、背景图……）deck 里一处都没有就报错，回样式表补上；确属本份内容用不上的
+   （例如只出现在模版某张示例图里），加 `--allow-missing 名称` 声明后再跑。这是**第 1 层代码读取校验**，整副 deck 全量跑，**报出的错误全部修掉**，
    修完重跑直到没有错误；它报出框、溢出、文字互压的页记进复查范围；
 
 6. **第 2 层看图校验**：只渲染「第 1 层报出的页 ∪ 页清单复查列表 ∪ 每种页型各抽一页」
