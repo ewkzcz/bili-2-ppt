@@ -168,7 +168,7 @@ https://github.com/ewkzcz/bili-2-ppt
 
 ## 六、社区友链
 
-- [LINUX DO](https://linux.do/)：一个关注开发者、开源项目与 AI 工具交流的社区。感谢社区佬友对开源工具和 Agent 工作流的讨论与反馈。
+[LINUX DO](https://linux.do/)：一个关注开发者、开源项目与 AI 工具交流的社区。感谢社区佬友对开源工具和 Agent 工作流的讨论与反馈。
 
 
 
