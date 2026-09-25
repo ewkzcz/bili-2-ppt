@@ -90,7 +90,8 @@ description: 从知识树和素材按所选 Markdown 模版（默认知识博客
 
 ## 学习笔记PPT
 
-分页编排好之后交给 `bili-pptx`：主代理先读所选模版原件，写好本份 deck 的样式表 `deck_style.py`，
+分页编排好之后交给 `bili-pptx`：主代理先读所选模版原件，写好本份 deck 的样式表 `deck_style.py`
+（同一套模版有样式缓存就直接复用，见 bili-pptx 的「读模版」），
 各批按它和 `deck_kit` 的绘图工具逐页构图（`anim=` 参数声明分步），
 合并后用 `inject_animations.py` 注入真动画，再跑 `validate_deck.py` 和渲染自检。
 
