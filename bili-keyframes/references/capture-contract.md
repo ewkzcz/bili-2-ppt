@@ -51,13 +51,16 @@
   "threshold": 3.0,
   "keep_policy": "last-frame-of-each-run",
   "parts": [
-    {"part": 5, "kept": [{"time": 53.0, "file": "frames/P05/00053.png"}], "kept_count": 1, "dropped_count": 4}
+    {"part": 5, "kept": [{"time": 53.0, "run_start": 13.0, "file": "frames/P05/00053.png"}], "kept_count": 1, "dropped_count": 4}
   ],
   "kept_total": 1,
   "dropped_total": 4,
   "errors": []
 }
 ```
+
+`kept[].time` 是保留帧（一段相同画面的最后一帧）的时间，`run_start` 是这段画面最早出现的时间；
+知识树阶段的 `assign_frames.py` 用 `[run_start, time]` 这段区间按字幕时间段分派画面。
 
 `dedup/dedup_log.jsonl` 每行一个被折叠的帧：`part/time/file/folded_into/kept_before/kept_after/distance_prev_frame/distance_run_start/reason`。
 

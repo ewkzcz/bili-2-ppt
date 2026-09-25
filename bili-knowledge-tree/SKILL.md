@@ -26,12 +26,24 @@ description: 素材对齐层：读画面保留清单和定时文字材料立出�
 
 ## 处理流程
 
-1. **立知识树**：读文字材料，分出分类与小节，每节给出功能性短标题；
-2. **分派画面**：把保留清单里的画面分到各小节；
-3. **写 `notes.plan.json`**：
+1. **立知识树**：读纠错稿，分出分类与小节，每节给出功能性短标题，
+   并按纠错稿的时间轴写上这一节对应的字幕时间段 `spans[]`（`{"part", "start", "end"}`，可以有多段）；
+2. **脚本先分派画面**：不逐张看图，先让脚本按时间段把保留清单里的画面分到各节：
+
+   ```bash
+   "$PY" "$SKILL_ROOT"/bili-knowledge-tree/scripts/assign_frames.py \
+     --plan $WORK/plan/notes.plan.json --keep $WORK/keyframes/dedup/dedup_keep.json
+   ```
+
+   每张画面在屏幕上的区间和哪节的时间段重叠最多就归哪节，写进该节 `frames[]`；
+   每节出一张缩略图总览 `$WORK/plan/frame_sheets/<节 id>.jpg`，横跨两节或落在所有时间段外的画面
+   列进 `$WORK/plan/frame_assign.json` 的 `review[]`，在总览里加红框；
+3. **主代理只看总览、只处理待复核的**：每节看一张总览，删掉过渡态、加载中、和本节无关的画面；
+   `review[]` 里的几张单独打开看，定下归哪节或丢掉。其余画面不再逐张打开；
+4. **写完 `notes.plan.json`**：
 
    - `theme`：主题名，也是交付物文件名的前缀；
-   - `sections[]`：每节的 `id`、功能性短标题、`frames[]`（这一节用哪几张画面）、
+   - `sections[]`：每节的 `id`、功能性短标题、`spans[]`（字幕时间段）、`frames[]`（这一节用哪几张画面）、
      `points[]`（这一节要讲清的要点）、`missing[]`（材料里确实缺的）；
    - `batches[]`：切好的批次，每批一个连续的小节区间。
 

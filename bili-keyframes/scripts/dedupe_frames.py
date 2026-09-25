@@ -156,7 +156,9 @@ def dedupe_part(entries: list[dict[str, Any]], threshold: float) -> tuple[list[d
     entries = sorted(entries, key=lambda entry: (entry["time"] if entry["time"] is not None else float("inf"), entry["file"]))
     runs = group_runs(entries, threshold)
     kept_indexes = [run[-1] for run in runs]
-    kept = [entries[index] for index in kept_indexes]
+    # run_start 记下这张画面最早出现的时间：保留的是一段的最后一帧，画面其实从段首就在屏幕上，
+    # 知识树按字幕时间段分派画面时要用整段区间。
+    kept = [{**entries[run[-1]], "run_start": entries[run[0]]["time"]} for run in runs]
     dropped: list[dict[str, Any]] = []
     for run in runs:
         folded_into = entries[run[-1]]
@@ -317,7 +319,7 @@ def main() -> int:
             {
                 "part": part,
                 "kept": [
-                    {"time": entry["time"], "file": entry["file"]}
+                    {"time": entry["time"], "run_start": entry.get("run_start", entry["time"]), "file": entry["file"]}
                     for entry in kept_by_part.get(part, [])
                 ],
                 "kept_count": len(kept_by_part.get(part, [])),
