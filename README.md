@@ -152,6 +152,9 @@ https://github.com/ewkzcz/bili-2-ppt
 把这个视频做成学习资料：https://www.bilibili.com/video/BVxxxxxxxxxx
 ```
 
+开工前会一次性问清要哪些文档、哪个 PPT 模版、出哪几版 PPT 等选项（可选模版现场读取，包括你自己加的），
+答完就可以离开，全程自动跑完，最后交一份验收报告。PPT 的看图校验最多 3 轮，不会无限循环。
+
 想加自己的 PPT 模版，把一对同名的 pptx 和 html 放进 `bili-pptx/references/` 即可。
 
 想加自己的 Markdown 模版（比如「速查手册」），在 `bili-document-builder/references/templates/` 下建一个 `速查手册/` 目录，放进两份文档即可，不用改脚本：

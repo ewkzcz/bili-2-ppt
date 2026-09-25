@@ -28,10 +28,11 @@ description: 从知识树和素材按所选 Markdown 模版（默认知识博客
   术语写法照术语表；
 - 要哪几份：Markdown 模版名的列表（`references/templates/` 下的目录名，默认全部内置模版）
   加上要不要学习笔记PPT（默认要）；
-- 要 PPT 时的模版名（`bili-pptx/references/` 下，默认 `Cryo_Academic`）；
+- 要 PPT 时的模版名与版本（图片版 / 图形版 / 两版）；
 - 并行批数（默认 5）、输出目录和已知资料缺失项。
 
-已明确的选项直接使用，不重复询问。
+这些选项由调度器在开工前一次问定，记在 `run.config.json` 里，这里直接读，**不向用户重复询问**。
+可选的 Markdown 模版与 PPT 模版都是现场从目录读出来的，不写死。
 
 ## Markdown 模版
 
@@ -52,7 +53,8 @@ description: 从知识树和素材按所选 Markdown 模版（默认知识博客
 | `知识博客文章` | 「这个概念是什么、怎么运作、和什么有关」，读完建立完整认知 | [描述](references/templates/知识博客文章/描述.md) / [案例](references/templates/知识博客文章/案例.md) |
 | `八股模拟面试` | 「被问到某个问题怎么答」，每题分**简要回答 / 详细问答 / 相关知识**三段 | [描述](references/templates/八股模拟面试/描述.md) / [案例](references/templates/八股模拟面试/案例.md) |
 
-- **选用**：用户在开头指定了要哪几种就用哪几种，没指定用全部内置模版；
+- **选用**：用哪几种由调度器开工前一次问定（`run.config.json`），可选项是现场读 `references/templates/`
+  得到的；单独使用本技能且没指定时用全部模版；
 - **新增**：用户在 `references/templates/` 下建一个以模版名命名的目录，放进 `描述.md` 与 `案例.md`，
   即可按名字选用，不需要改任何脚本。
   frontmatter 的字段含义见 [scripts/md_template_spec.py](../scripts/md_template_spec.py)，
