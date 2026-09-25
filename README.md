@@ -54,7 +54,7 @@ flowchart LR
 
 四个阶段，只跑你需要的那几个，已有产物直接复用：
 
-- **字幕资料**（[bili-subtitle-asr](bili-subtitle-asr/SKILL.md)）：先找现成字幕，再取公共字幕和网页 AI 字幕，都没有才提音频跑本地 ASR；
+- **字幕资料**（[bili-subtitle-asr](bili-subtitle-asr/SKILL.md)）：先找现成字幕，再取公共字幕和网页 AI 字幕，都没有才提音频跑本地 ASR。拿到字幕后立即按上下文纠错（错别字、同音字、术语、上下文补全），后面的阶段只用纠错稿，不再重复纠错；
 - **画面采集**（[bili-keyframes](bili-keyframes/SKILL.md)）：后台浏览器按进度条跳转采样，去重，标出画面覆盖不足的区间；
 - **知识树与画面分派**（[bili-knowledge-tree](bili-knowledge-tree/SKILL.md)）：立知识树、统一术语，把每张画面派到它对应的知识点。这一步只产出中间清单，不出文档；
 - **三份交付物**（[bili-document-builder](bili-document-builder/SKILL.md) + [bili-pptx](bili-pptx/SKILL.md)）：编排分页与并行转写，建 PPT、注入动画、渲染自检。

@@ -5,7 +5,24 @@ description: Extract Bilibili video, collection-part, and opus/article materials
 
 # Bilibili 字幕与音频 ASR
 
-本技能只生成可核查的 Bilibili 原始材料：视频元数据、分集信息、页面字幕、网页 AI 字幕、音频 ASR、opus/article 正文和证据文件。它不负责关键帧截图、PDF 排版或最终文档。
+本技能只生成可核查的 Bilibili 原始材料：视频元数据、分集信息、页面字幕、网页 AI 字幕、音频 ASR、opus/article 正文和证据文件，
+以及**紧接着完成的字幕纠错稿与术语表**。它不负责关键帧截图、PDF 排版或最终文档。
+
+## 必做：拿到字幕后立即纠错
+
+**每一集的字幕（页面字幕、网页 AI 字幕、音频 ASR 任一来源）一落盘，立即严格按上下文纠错，
+纠完这一集再处理下一集。** 这是本技能的交付内容，不是可选项，也不许留给下游：
+
+- 改错别字、同音字 / 近音字、英文术语音译、缩略语、数字与单位、人名产品名、断句标点，
+  并按上下文补全识别丢掉的字词和半截话；
+- 同步建立合集级 `glossary.json`：每个术语只有一种正确写法，附上字幕里出现过的错误写法；
+- 产出与原字幕逐段对应的 `*.corrected.json`：段数、顺序、时间轴一律不动，改过的段留 `orig`；
+  核实不了的写 `[?]` 并在 `uncertain` 里说明，**不许猜**；
+- 只改识别错误，**不改口语表达**（口头禅、重复留给文档阶段处理）。
+
+下游（知识树、Markdown 交付物、学习笔记PPT）**只读纠错稿和术语表，不再做第二遍纠错**。
+纠错不彻底是本阶段的缺陷，不能让它流到 PPT 阶段再被发现、再被打回——那一步的 token 消耗极高。
+完整做法、格式与交接前自查见 [references/subtitle-correction.md](references/subtitle-correction.md)。
 
 ## 输入与路线
 
@@ -137,7 +154,9 @@ $PYTHON "$SKILL_DIR/scripts/process_video_part.py" \
 - `subtitle_manifest.json`：字幕来源、语言、URL 和本地文件；
 - 定时字幕 JSON：`segments[{start,end,text}]`；
 - TXT/SRT 阅读副本；
-- `audio_manifest.json`、ASR JSON 和失败日志（使用音频路线时）。
+- `audio_manifest.json`、ASR JSON 和失败日志（使用音频路线时）；
+- `*.corrected.json`：每份定时字幕的纠错稿，**下游唯一的文字输入**；
+- `glossary.json`：合集级术语表（放在输出目录顶层）。
 
 每份字幕必须在 `source`/`backend` 中区分页面字幕、网页 AI 字幕和音频 ASR。专有名词听不清、字幕乱码、接口受限或信息只存在于画面时，标记“需人工核对/需视觉证据”，禁止用标题、常识或模型猜测补齐。
 
