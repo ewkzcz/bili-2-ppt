@@ -19,7 +19,8 @@
 - 知识树 `notes.plan.json` 由 [bili-knowledge-tree](../../bili-knowledge-tree/SKILL.md) 产出；
 - 页清单 `pages.plan.json` 由本技能的主代理读知识树与画面材料后产出。
 
-清单都是**中间产物**，可以带画面文件与时间；交付物不可以。
+清单都是**中间产物**，放在系统临时目录下的 `$WORK/plan/`，可以带画面文件与时间；交付物不可以。
+片段写到 `$WORK/fragments/`，**不写进仓库或交付目录**。
 
 切批规则：
 

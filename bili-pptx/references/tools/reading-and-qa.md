@@ -19,7 +19,7 @@ unzip -o presentation.pptx -d unpacked/
 范围以外的页不出图逐页扫描。
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/render_preview.py deck.pptx -o preview/ --slides 3,7,12
+.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/render_preview.py $WORK/deck/deck.pptx -o $WORK/deck/preview/ --slides 3,7,12
 ```
 
 全量渲染（不带 `--slides`）用于读模版原件。底层就是两步，需要手动控制参数时直接用：
@@ -66,8 +66,8 @@ FONTCONFIG_PATH=/opt/homebrew/etc/fonts \
 几像素级的微小偏差不用列。
 
 依次读取并分析这些图：
-1. preview/slide-03.jpg（预期：……）
-2. preview/slide-07.jpg（预期：……）
+1. $WORK/deck/preview/slide-03.jpg（预期：……）
+2. $WORK/deck/preview/slide-07.jpg（预期：……）
 ```
 
 ### 收工条件

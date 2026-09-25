@@ -53,7 +53,7 @@ description: 在静默后台浏览器里按 Bilibili 播放器进度条跳转采
 
 ```bash
 .keyframe-venv/bin/python bili-2-ppt/bili-keyframes/scripts/dedupe_frames.py <帧目录|capture_log.jsonl> \
-  --output-dir <输出目录>/dedup --threshold 9 --max-gap 90
+  --output-dir $WORK/keyframes/dedup --threshold 9 --max-gap 90
 ```
 
 - 需要 Pillow，用 `.keyframe-venv/bin/python` 运行。判定用灰度缩略图的平均像素差，纯 Pillow 实现，不依赖 numpy。
@@ -73,7 +73,8 @@ description: 在静默后台浏览器里按 Bilibili 播放器进度条跳转采
 
 ## 产物与去向
 
-本阶段产出的是**中间产物**，可以保留 `part/time/file` 这类溯源信息：
+本阶段产出的是**中间产物**，全部放在系统临时目录下的 `$WORK/keyframes/`（`plan_keyframes.py --output`、
+`capture_keyframes.py --out` 都指向这里），不放进仓库或交付目录；可以保留 `part/time/file` 这类溯源信息：
 
 - 截图目录；
 - `capture_log.jsonl`：每张截图的完整记录；

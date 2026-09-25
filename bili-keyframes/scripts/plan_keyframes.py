@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import tempfile
 from pathlib import Path
 
 
@@ -29,7 +30,9 @@ def sample_count(duration: float) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser(description="生成 Bilibili 关键画面跳转计划")
     parser.add_argument("metadata", type=Path, help="包含 episodes 数组的 metadata.json")
-    parser.add_argument("--output", type=Path, default=Path("keyframe_plan.json"))
+    # 中间文件默认放系统临时目录，不落进当前目录或仓库
+    parser.add_argument("--output", type=Path,
+                        default=Path(tempfile.gettempdir()) / "bili-2-ppt" / "keyframe_plan.json")
     args = parser.parse_args()
 
     data = json.loads(args.metadata.read_text(encoding="utf-8"))

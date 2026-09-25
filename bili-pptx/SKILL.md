@@ -45,7 +45,7 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 
    ```bash
    .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/render_preview.py \
-     bili-2-ppt/bili-pptx/references/<模版名>.pptx -o <工作目录>/template-preview/
+     bili-2-ppt/bili-pptx/references/<模版名>.pptx -o $WORK/deck/template-preview/
    ```
 
 2. **读元数据**：列出主题配色与字体、每页背景、每个形状的坐标 / 填充 / 描边 / 圆角 / 投影、
@@ -56,8 +56,8 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
      bili-2-ppt/bili-pptx/references/<模版名>.pptx [--slides 1,3]
    ```
 
-   需要更细的就 `unzip -o <模版名>.pptx -d <工作目录>/template-xml/` 解包读 XML，背景纹理图在 `ppt/media/` 下；
-3. **写样式表**：把读出的设计语言写成本份 deck 的 `deck_style.py`，放在工作目录（不放进技能）：
+   需要更细的就 `unzip -o <模版名>.pptx -d $WORK/deck/template-xml/` 解包读 XML，背景纹理图在 `ppt/media/` 下；
+3. **写样式表**：把读出的设计语言写成本份 deck 的 `deck_style.py`，放在 `$WORK/deck/`（系统临时目录下，不放进技能仓库）：
    - `TEMPLATE`（模版名）、`FONTS`（至少 `heading` / `body` / `mono`，每个是 `{"latin", "ea"}`）；
    - 颜色、文字样式、形状样式的取值（`deck_kit` 的样式字典格式）；
    - 本份 deck 共用的页面外壳函数：开页（背景）、版头（眉标、标题、结论句、压线）、版脚（页码、进度），
@@ -136,13 +136,13 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 4. **合并并注入动画**：
 
    ```bash
-   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/inject_animations.py deck.pptx
+   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/inject_animations.py $WORK/deck/deck.pptx
    ```
 
 5. **结构校验**：
 
    ```bash
-   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/validate_deck.py deck.pptx
+   .keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/validate_deck.py $WORK/deck/deck.pptx
    ```
 
    查禁用词、占位符残留、动画声明与形状 id 的对应、组号连续性、形状出框、中文字体、
@@ -169,8 +169,9 @@ description: 把画面材料重述为以真实画面为主体、带完整分步�
 - 谈交付物自身的话：`这份材料`、`整份材料`、`全篇`、`这一页`、`读者`、`跳着看`、`学习顺序`。
 
 **备注是交付物的一部分**，`validate_deck.py` 用同一套词表单独查一遍。
-文件名用主题命名，不带任何标识符。中间产物（样式表、页清单、分批脚本、预览图）不受此约束，
-但不要放进交付目录。
+文件名用主题命名，不带任何标识符。中间产物（样式表、页清单、分批脚本、工作中的 pptx、预览图）不受此约束，
+但**只放在系统临时目录下的 `$WORK/deck/`**，不放进交付目录，也不放进仓库。
+deck 在 `$WORK/deck/` 里建好、注入动画、校验完，再把最终的两版 pptx 写到交付目录。
 
 ## 依赖
 

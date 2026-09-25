@@ -20,7 +20,7 @@
 2. 读取播放器字幕探测结果，区分普通字幕和 `ai-zh`；
 3. 普通字幕 URL 可用时下载原始字幕 JSON；
 4. `ai-zh` URL 为空时，通过本机已登录 B站 的浏览器会话取得页面实际请求的 AI 字幕 URL：
-   运行 `scripts/fetch_browser_ai_subtitles.py --bvid <BVID> --out <目录>`，
+   运行 `scripts/fetch_browser_ai_subtitles.py --bvid <BVID> --out $WORK/subtitle`（`$WORK` 在系统临时目录下，见调度器的「目录约定」），
    由它自己选会话（复用 > 克隆已登录配置文件 > 临时配置文件）；没有登录态可复用时
    跳过这一步，直接进第 5 步；
 5. 两种字幕都不可用时，执行音频-only 下载和本地 ASR——这是兜底路线，

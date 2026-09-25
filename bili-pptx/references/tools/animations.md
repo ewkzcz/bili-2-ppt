@@ -62,7 +62,7 @@ kit.picture(slide, "frames/0042.png", x2, y, w2, h, frame=style.FRAME, anim=2)  
 ## 自检
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/validate_deck.py deck.pptx
+.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/validate_deck.py $WORK/deck/deck.pptx
 ```
 
 查四件事：形状名上的声明有没有洗掉、timing 引用的形状 id 是否真实存在、

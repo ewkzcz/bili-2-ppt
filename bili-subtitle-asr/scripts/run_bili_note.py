@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -225,7 +226,10 @@ def main() -> int:
     args = parser.parse_args()
 
     source_id = find_source_id(args.source)
-    work_dir = Path(args.work_dir) if args.work_dir else Path.cwd() / f"tmp_bili_note_{safe_slug(source_id)}"
+    # 中间文件默认放系统临时目录（macOS 的 $TMPDIR、Windows 的 %TEMP%），不落进当前目录或仓库
+    work_dir = Path(args.work_dir) if args.work_dir else (
+        Path(tempfile.gettempdir()) / "bili-2-ppt" / safe_slug(source_id) / "subtitle"
+    )
     archive_dir = Path(args.archive_dir) if args.archive_dir else None
     work_dir.mkdir(parents=True, exist_ok=True)
     steps: list[dict[str, Any]] = []

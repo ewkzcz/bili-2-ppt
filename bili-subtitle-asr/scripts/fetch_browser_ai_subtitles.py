@@ -11,7 +11,7 @@
 用法：
 
     python3 scripts/fetch_browser_ai_subtitles.py \\
-      --bvid BVxxxx --out ./tmp_bili_extract --parts all
+      --bvid BVxxxx --out "$WORK/subtitle" --parts all
 """
 
 from __future__ import annotations

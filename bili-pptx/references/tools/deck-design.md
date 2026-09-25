@@ -122,7 +122,7 @@
 ### 第 1 层：代码读取校验（全量，必做）
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/validate_deck.py deck.pptx
+.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/validate_deck.py $WORK/deck/deck.pptx
 ```
 
 对整副 deck 全量跑：禁用词、占位符残留、动画声明与组号、形状出框、文字溢出、文字互压、
@@ -135,7 +135,7 @@
 （封面、目录、章节页、画面页、代码页、表格页）各抽一页。只渲染这些页：
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/render_preview.py deck.pptx -o preview/ --slides 3,7,12
+.keyframe-venv/bin/python bili-2-ppt/bili-pptx/scripts/render_preview.py $WORK/deck/deck.pptx -o $WORK/deck/preview/ --slides 3,7,12
 ```
 
 看图查这些版面问题，重叠、溢出、截断优先：

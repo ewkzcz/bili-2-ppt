@@ -46,15 +46,19 @@ description: Extract Bilibili video, collection-part, and opus/article materials
 ```bash
 SKILL_DIR="$(cd "$(dirname "$0")" && pwd)"
 PYTHON="${PYTHON:-python3}"
+# 中间文件放系统临时目录（macOS 的 $TMPDIR、Windows 的 %TEMP%），不放进仓库或当前目录
+WORK="$($PYTHON -c "import tempfile, pathlib; print(pathlib.Path(tempfile.gettempdir()) / 'bili-2-ppt' / 'BVxxxx')")"
 ```
+
+调度器已经定好 `$WORK` 时（见 `run.config.json`）直接用它。下面所有 `--out` / `--work-dir` 都指向 `$WORK` 下的子目录。
 
 ### 统一入口
 
 ```bash
 $PYTHON "$SKILL_DIR/scripts/run_bili_note.py" \
   "https://www.bilibili.com/video/BVxxxx/" \
-  --work-dir ./tmp_bili_extract \
-  --archive-dir ./archive/BVxxxx_title \
+  --work-dir "$WORK/subtitle" \
+  --archive-dir "$WORK/archive" \
   --parts all
 ```
 
@@ -64,7 +68,7 @@ $PYTHON "$SKILL_DIR/scripts/run_bili_note.py" \
 
 ```bash
 $PYTHON "$SKILL_DIR/scripts/extract_bilibili.py" BVxxxx \
-  --out ./tmp_bili_extract \
+  --out "$WORK/subtitle" \
   --parts all \
   --download-subtitles
 ```
@@ -73,7 +77,7 @@ $PYTHON "$SKILL_DIR/scripts/extract_bilibili.py" BVxxxx \
 
 ```bash
 $PYTHON "$SKILL_DIR/scripts/extract_bilibili.py" BVxxxx \
-  --out ./tmp_bili_extract \
+  --out "$WORK/subtitle" \
   --parts "1,10,38" \
   --download-audio \
   --transcribe \
@@ -103,7 +107,7 @@ $PYTHON "$SKILL_DIR/scripts/extract_bilibili.py" BVxxxx \
 ```bash
 $PYTHON "$SKILL_DIR/scripts/fetch_browser_ai_subtitles.py" \
   --bvid BVxxxx \
-  --out ./tmp_bili_extract \
+  --out "$WORK/subtitle" \
   --page 1
 ```
 
@@ -120,7 +124,7 @@ TXT、SRT 和 `subtitle_manifest.json`。乱码、主题不符或时间轴异常
 ```bash
 $PYTHON "$SKILL_DIR/scripts/extract_bilibili_opus.py" \
   "https://www.bilibili.com/opus/1194341967364882439" \
-  --out ./tmp_bili_opus \
+  --out "$WORK/opus" \
   --comments
 ```
 
@@ -132,8 +136,8 @@ $PYTHON "$SKILL_DIR/scripts/extract_bilibili_opus.py" \
 $PYTHON "$SKILL_DIR/scripts/process_video_part.py" \
   BVxxxx \
   --part 1 \
-  --work-dir ./tmp_bili_part_01 \
-  --archive-dir ./archive/BVxxxx/part-01 \
+  --work-dir "$WORK/subtitle/part-01" \
+  --archive-dir "$WORK/archive/part-01" \
   --download-audio \
   --transcribe \
   --asr-backend faster-whisper
@@ -156,7 +160,7 @@ $PYTHON "$SKILL_DIR/scripts/process_video_part.py" \
 - TXT/SRT 阅读副本；
 - `audio_manifest.json`、ASR JSON 和失败日志（使用音频路线时）；
 - `*.corrected.json`：每份定时字幕的纠错稿，**下游唯一的文字输入**；
-- `glossary.json`：合集级术语表（放在输出目录顶层）。
+- `glossary.json`：合集级术语表（放在 `$WORK/subtitle/` 顶层）。
 
 每份字幕必须在 `source`/`backend` 中区分页面字幕、网页 AI 字幕和音频 ASR。专有名词听不清、字幕乱码、接口受限或信息只存在于画面时，标记“需人工核对/需视觉证据”，禁止用标题、常识或模型猜测补齐。
 
