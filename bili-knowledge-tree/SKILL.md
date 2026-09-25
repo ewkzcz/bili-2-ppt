@@ -58,12 +58,12 @@ description: 素材对齐层：读画面保留清单和定时文字材料立出�
 ## 材料不足时
 
 - 能从别处核实的就核实后补齐；
-- 核不实的**如实写进 `missing[]` 并说明缺什么**，不要编造，也不要把缺口藏起来；
+- 核不实的**如实写进 `missing[]` 并说明缺什么**，同时记进 `$WORK/pending.jsonl`，不要编造；
 - 不补讲者没讲的技术细节，不把口语里的约数写成精确值，不编量化数据。
 
 ## 交付物无感
 
 交付物里不能看出内容和素材采集过程有关。
 这棵树是中间产物，`missing[]` 里可以写「这一段素材里没讲」，但**不要把这些话写进要交付的正文**——
-正文里的缺口语按各交付物模板的规定写。
+缺口不进交付物正文，统一汇进 `{主题}-待确认事项.md`（见 [references/pending-items.md](../references/pending-items.md)）。
 完整禁用词表见 [references/delivery-banlist.json](../references/delivery-banlist.json)。

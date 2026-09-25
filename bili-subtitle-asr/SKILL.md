@@ -17,7 +17,7 @@ description: Extract Bilibili video, collection-part, and opus/article materials
   并按上下文补全识别丢掉的字词和半截话；
 - 同步建立合集级 `glossary.json`：每个术语只有一种正确写法，附上字幕里出现过的错误写法；
 - 产出与原字幕逐段对应的 `*.corrected.json`：段数、顺序、时间轴一律不动，改过的段留 `orig`；
-  核实不了的写 `[?]` 并在 `uncertain` 里说明，**不许猜**；
+  核实不了的写 `[?]` 并在 `uncertain` 里说明，同时记进 `$WORK/pending.jsonl`，**不许猜**；
 - 只改识别错误，**不改口语表达**（口头禅、重复留给文档阶段处理）。
 
 下游（知识树、Markdown 交付物、学习笔记PPT）**只读纠错稿和术语表，不再做第二遍纠错**。
