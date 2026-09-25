@@ -25,6 +25,8 @@
 | 知识博客文章 | 从头来细致学习整体内容：按知识点和概念编排的章节式长文 |
 | 八股模拟面试 | 深扣细节，找出理解上的不足：每题分「简要回答 / 详细问答 / 相关知识」三段 |
 
+知识博客文章和八股模拟面试是两个内置的 **Markdown 模版**，可以按同样的方式加自己的模版，见「使用」。
+
 PPT 一次交两个版本，方便对照检查重绘有没有读错内容：
 
 - **图片版**：截图原样嵌入PPT页面；
@@ -77,7 +79,8 @@ bili-2-ppt/
 ├── bili-subtitle-asr/        阶段 1：字幕获取、音频提取与分段 ASR
 ├── bili-keyframes/           阶段 2：画面采集、去重、补采样提示
 ├── bili-knowledge-tree/      阶段 3：立知识树、把画面分派到各知识点（中间环节）
-├── bili-document-builder/    阶段 4：知识博客文章与八股模拟面试，并编排 PPT 分页转写
+├── bili-document-builder/    阶段 4：按 Markdown 模版产出文档，并编排 PPT 分页转写
+│   └── references/templates/ Markdown 模版：每个模版一个目录，含 描述.md + 案例.md
 ├── bili-pptx/                阶段 4：读模版、建页、注入动画、校验与渲染自检
 ├── references/               共享契约：禁用词表、mermaid 配色
 └── scripts/                  跨阶段共用脚本：浏览器会话、CDP 执行、Markdown 规范化、版式检查
@@ -104,6 +107,8 @@ bili-2-ppt/
 <img src="assets/template-paged-daylight.webp" width="800" alt="PagedDaylight 模版原件里的一页">
 
 ### MD案例
+
+每个 Markdown 模版自带一份参考案例：[知识博客文章](bili-document-builder/references/templates/知识博客文章/案例.md)、[八股模拟面试](bili-document-builder/references/templates/八股模拟面试/案例.md)。
 
 八股模拟面试案例
 
@@ -147,7 +152,14 @@ https://github.com/ewkzcz/bili-2-ppt
 把这个视频做成学习资料：https://www.bilibili.com/video/BVxxxxxxxxxx
 ```
 
-想加自己的模版，把一对同名的 pptx 和 html 放进 `bili-pptx/references/` 即可。
+想加自己的 PPT 模版，把一对同名的 pptx 和 html 放进 `bili-pptx/references/` 即可。
+
+想加自己的 Markdown 模版（比如「速查手册」），在 `bili-document-builder/references/templates/` 下建一个 `速查手册/` 目录，放进两份文档即可，不用改脚本：
+
+- `描述.md`：格式定位描述，写这种文档的定位和格式规范，文件头 frontmatter 声明结构规则；
+- `案例.md`：实际产物案例，一份按这个格式写好的成品。
+
+照内置的两个模版抄一份改最省事。放好后在需求里点名要「速查手册」就会按它产出。
 
 
 

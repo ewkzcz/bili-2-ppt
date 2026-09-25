@@ -1,21 +1,22 @@
 ---
 name: bili-document-builder
-description: 从知识树和素材产出知识博客文章 Markdown 与八股模拟面试 Markdown，并编排学习笔记PPT 的分页转写；同一棵知识树产出三份形态不同但口径一致的交付物。
+description: 从知识树和素材按所选 Markdown 模版（默认知识博客文章、八股模拟面试）产出 Markdown 交付物，并编排学习笔记PPT 的分页转写；同一棵知识树产出多份形态不同但口径一致的交付物。
 ---
 
 # 从素材到多份交付物
 
-这个子技能负责**知识表达层**：把知识树和素材变成三份形态不同的交付物，
+这个子技能负责**知识表达层**：把知识树和素材变成形态不同的交付物，
 它们共用同一棵知识树，分类、术语、结论必须一致。
 
-- **知识博客文章 Markdown**：按知识点、专有名词、概念编排的章节式长文，面向从头学到尾；
-- **八股模拟面试 Markdown**：按分类汇编的问题集，每题三段；
+- **Markdown 交付物**：每种形态是一个 Markdown 模版，内置两个——
+  **知识博客文章**（按知识点、专有名词、概念编排的章节式长文，面向从头学到尾）和
+  **八股模拟面试**（按分类汇编的问题集，每题三段）。模版可以扩展，见「Markdown 模版」；
 - **学习笔记PPT**：分步展开、以真实画面为主体的幻灯片。分页由本技能编排，
   **建页、注入动画、渲染自检交给 [bili-pptx](../bili-pptx/SKILL.md)**。
 
 它不采集画面，也不立知识树——知识树由
 [bili-knowledge-tree](../bili-knowledge-tree/SKILL.md) 产出，是这一步的主要输入。
-正文的写法（口语稿怎么纠错、去口语、按逻辑重排）三份共用一份规范：
+正文的写法（口语稿怎么纠错、去口语、按逻辑重排）所有交付物共用一份规范：
 [references/narration-refine.md](references/narration-refine.md)。
 
 ## 输入
@@ -23,26 +24,42 @@ description: 从知识树和素材产出知识博客文章 Markdown 与八股模
 接收调度器或直接调用者提供的：
 
 - `notes.plan.json` 知识树，或画面保留清单 + 文字材料（知识树缺失时）；
-- `style`：`blog`（只要知识博客文章）、`qa`（只要八股模拟面试）、`deck`（只要学习笔记PPT）、
-  `all`（三份都要，默认）；
+- 要哪几份：Markdown 模版名的列表（`references/templates/` 下的目录名，默认全部内置模版）
+  加上要不要学习笔记PPT（默认要）；
 - 要 PPT 时的模版名（`bili-pptx/references/` 下，默认 `Cryo_Academic`）；
 - 并行批数（默认 5）、输出目录和已知资料缺失项。
 
 已明确的选项直接使用，不重复询问。
 
-## 两份 Markdown
+## Markdown 模版
 
-同一棵知识树产出两份形态不同的文档，各自独立可读：
+和 PPT 模版一样，Markdown 交付物也按模版扩展。一个模版是 `references/templates/<模版名>/` 目录，
+里面两份文档：
 
-- **知识博客文章**（[references/blog-template.md](references/blog-template.md)）：回答
-  「这个概念是什么、怎么运作、和什么有关」，读者读完建立完整认知。
-- **八股模拟面试**（[references/qa-template.md](references/qa-template.md)）：回答
-  「被问到某个问题怎么答」，每题分**简要回答 / 详细问答 / 相关知识**三段。
-  简要回答是时间紧迫时能直接说出口的版本，完整回答讲清来龙去脉，
-  相关知识是把读者可能卡住的地方补上——这部分不要求在答题时讲出来。
+- `描述.md`：**格式定位描述**。这种文档的定位（回答什么问题、给谁用）和格式规范
+  （怎么分层、正文形态、插图、收尾）；文件头的 frontmatter 声明结构规则（标题层级、
+  分类与条目写法、每个条目必备的内容、固定分段、开篇上限、禁用标题、交付文件名），
+  供校验与排版脚本读取；
+- `案例.md`：**实际产物案例**。一份按这个格式写好、能通过校验的成品，
+  示范层级、颗粒度、图文比例和语气。
 
-两份模板都是通用规范，不含任何具体主题；换一批素材直接套用，
-不要往模板里塞当前主题的专有内容。
+内置两个：
+
+| 模版名 | 回答什么 | 描述 / 案例 |
+| --- | --- | --- |
+| `知识博客文章` | 「这个概念是什么、怎么运作、和什么有关」，读完建立完整认知 | [描述](references/templates/知识博客文章/描述.md) / [案例](references/templates/知识博客文章/案例.md) |
+| `八股模拟面试` | 「被问到某个问题怎么答」，每题分**简要回答 / 详细问答 / 相关知识**三段 | [描述](references/templates/八股模拟面试/描述.md) / [案例](references/templates/八股模拟面试/案例.md) |
+
+- **选用**：用户在开头指定了要哪几种就用哪几种，没指定用全部内置模版；
+- **新增**：用户在 `references/templates/` 下建一个以模版名命名的目录，放进 `描述.md` 与 `案例.md`，
+  即可按名字选用，不需要改任何脚本。
+  frontmatter 的字段含义见 [scripts/md_template_spec.py](../scripts/md_template_spec.py)，
+  照内置模版抄一份改即可；新模版的案例要先能通过校验，校验不过说明规则和案例对不上；
+- `validate_document_output.py --list` 列出当前可用的模版。
+
+写之前把所选模版的**描述和案例都读一遍**：规则以描述为准，案例用来对齐成品的样子。
+案例只示范形态，**取它的写法，不取它的主题与内容**；描述是通用规范，
+不要往里塞当前主题的专有内容。
 
 ## 页清单与并行转写
 
@@ -51,10 +68,10 @@ description: 从知识树和素材产出知识博客文章 Markdown 与八股模
 主代理读知识树与画面材料，产出 `pages.plan.json`（页号、功能性短标题、每页要点、
 依据的画面、缺失项），然后切批派发子代理：**默认 5 批，用户指定了其他数字就用指定的那个**。
 
-每批产出三份片段：deck 构建片段、知识博客文章片段、八股模拟面试片段。契约、切批规则、
+每批按所选交付物各产出一份片段：deck 构建片段，以及每个 Markdown 模版一份片段。契约、切批规则、
 子代理的禁止事项见 [references/transcription-fanout.md](references/transcription-fanout.md)。
 
-这是整条链路里唯一并行的环节，其余阶段串行。三份交付物必须来自同一批知识改写，
+这是整条链路里唯一并行的环节，其余阶段串行。所有交付物必须来自同一批知识改写，
 不要让它们各自独立取材，否则结论会对不上。
 
 ## 学习笔记PPT
@@ -76,7 +93,7 @@ description: 从知识树和素材产出知识博客文章 Markdown 与八股模
 
 **动画是这个阶段编排的，不是最后补的。** PPT 的设计取自所选模版（`bili-pptx/references/` 下的模版名，
 默认 `Cryo_Academic`），做法见 [bili-pptx/SKILL.md](../bili-pptx/SKILL.md)。
-两份 Markdown 的 mermaid 图有自己的配色，见 [references/mermaid-style.md](../references/mermaid-style.md)。
+Markdown 交付物的 mermaid 图有自己的配色，见 [references/mermaid-style.md](../references/mermaid-style.md)。
 最终交付 `-图片版` 与 `-图形版` 两份，见同文件的「交付两个版本」。
 
 **篇幅跟素材量走。** 一个知识点通常占 2–6 页；十几个小时、几十集的课程，
@@ -96,7 +113,7 @@ description: 从知识树和素材产出知识博客文章 Markdown 与八股模
 
 ## 交付物无感
 
-三份交付物都必须让读者看不出内容和素材采集过程有关，也看不出经过任何工具处理。
+所有交付物都必须让读者看不出内容和素材采集过程有关，也看不出经过任何工具处理。
 禁用词表和完整规则见 [bili-pptx/SKILL.md](../bili-pptx/SKILL.md) 的「交付物无感」一节，
 由校验脚本拦一道。
 
@@ -105,23 +122,25 @@ description: 从知识树和素材产出知识博客文章 Markdown 与八股模
 
 ## 交付格式
 
-- **知识博客文章 Markdown**：`{主题}-知识博客文章.md`，按 blog-template 的章节编排；
-- **八股模拟面试 Markdown**：`{主题}-八股模拟面试.md`，按 qa-template 的三段式；
+- **Markdown 交付物**：文件名取模版 frontmatter 的 `output`，内置两个是
+  `{主题}-知识博客文章.md` 与 `{主题}-八股模拟面试.md`；
 - **学习笔记PPT**：`{主题}-学习笔记PPT-图片版.pptx` 与 `{主题}-学习笔记PPT-图形版.pptx`
   两份，页序与文字一致，由 `bili-pptx` 产出（见其「交付两个版本」）。
 
 ## 自检
 
-两份 Markdown 写完先跑校验，再交付：
+Markdown 合并后先按模版规范化排版（空行、按分类重排条目编号），再跑校验，然后交付：
 
 ```bash
-.keyframe-venv/bin/python bili-2-ppt/bili-document-builder/scripts/validate_document_output.py <文件> --mode auto
+.keyframe-venv/bin/python bili-2-ppt/scripts/normalize_md.py <文件> \
+  --template bili-2-ppt/bili-document-builder/references/templates/<模版名> --in-place
+.keyframe-venv/bin/python bili-2-ppt/bili-document-builder/scripts/validate_document_output.py <文件> --template <模版名>
 ```
 
-三种模式：`blog`（知识博客文章）、`qa`（八股模拟面试）、`auto`（按内容判定）。
-校验只查结构、字段齐全度、mermaid 块有没有被正文污染和禁用词，**不评价内容**。
-通过之后仍需人工看一眼：段落之间的过渡是否连贯、模拟面试三段的边界是否分明
-（简要回答有没有掺进本该放在完整回答里的内容）。
+`--template auto`（默认）先按文件名后缀 `-{模版名}.md` 判定，再按各模版的 `detect` 规则判定。
+校验只执行模版描述里声明的结构规则，外加 mermaid 块有没有被正文污染、配色和禁用词，
+**不评价内容**。通过之后仍需人工看一眼：段落之间的过渡是否连贯、各段的边界是否分明
+（比如模拟面试的简要回答有没有掺进本该放在完整回答里的内容）。
 
 **mermaid 块最常见的坏法是正文被吃了进去**：图写完了没收尾，后面那段解释文字落进
 围栏内，渲染端直接报 `Lexical error on line N. Unrecognized text.`，而且只给图内的

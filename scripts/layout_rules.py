@@ -8,9 +8,9 @@
 
 三条：
 
-1. 正文结束、下一节开始之前留 3 个空行；分类标题下直接接小标题、问答题内的
-   「简要回答 / 详细问答 / 相关知识」前留 1 个；标题与自己的正文之间不留空行；
-2. 问答题号按分类独立编号，每个 `##` 分类下从 `Q1` 重新开始；
+1. 正文结束、下一节开始之前留 3 个空行；分类标题下直接接小标题、条目内的
+   分段标题（模版的 `part_headings`）前留 1 个；标题与自己的正文之间不留空行；
+2. 条目编号按分类独立编号，每个分类下从 1 重新开始（模版的 `item_pattern`）；
 3. mermaid 块的配色与当前主题一致——主题声明行与七个角色的 `classDef` 都按
    [references/mermaid-style.md](../references/mermaid-style.md) 的色板走。
 """
@@ -20,14 +20,15 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from normalize_md import BLANK_AFTER_HEADING, HEADING, QA_HEADING, _fence_mask, blank_before
+from md_template_spec import TemplateSpec
+from normalize_md import BLANK_AFTER_HEADING, HEADING, _fence_mask, blank_before, iter_items
 from retint_mermaid import INIT_LINE, load_palette
 
 
-def find_blank_line_problems(text: str) -> list[str]:
+def find_blank_line_problems(text: str, parts: frozenset[str] = frozenset()) -> list[str]:
     """正文结束、下一节开始之前要留 3 个空行；标题与正文之间不留空行。
 
-    分类标题下面直接接小标题、问答题内的三个分段标题，前面只该有 1 个——
+    分类标题下面直接接小标题、条目内的分段标题，前面只该有 1 个——
     它们和上一段属于同一个单元，压 3 行等于把这个单元切碎。
     """
     lines = text.splitlines()
@@ -46,7 +47,7 @@ def find_blank_line_problems(text: str) -> list[str]:
         while cursor < len(lines) and lines[cursor].strip() == "":
             after += 1
             cursor += 1
-        want_before = blank_before(line, previous)
+        want_before = blank_before(line, previous, parts)
         # 下一行是标题时由那个标题的规则管，这里只查标题与正文之间
         next_is_heading = cursor < len(lines) and bool(HEADING.match(lines[cursor]))
         after_ok = cursor >= len(lines) or next_is_heading or after == BLANK_AFTER_HEADING
@@ -57,25 +58,17 @@ def find_blank_line_problems(text: str) -> list[str]:
     return problems
 
 
-def find_qa_numbering_problems(text: str) -> list[str]:
-    """问答的题号在每个分类下必须从 1 连续递增。"""
+def find_numbering_problems(text: str, spec: TemplateSpec) -> list[str]:
+    """条目编号在每个分类下必须从 1 连续递增。"""
+    if not spec.item_pattern:
+        return []
     lines = text.splitlines()
-    inside = _fence_mask(lines)
     problems: list[str] = []
-    expected = 0
-    for index, line in enumerate(lines):
-        if inside[index]:
-            continue
-        if line.startswith("## ") and not line.startswith("### "):
-            expected = 0
-            continue
-        match = QA_HEADING.match(line)
-        if not match:
-            continue
-        expected += 1
-        actual = int(re.search(r"Q(\d+)", line).group(1))
-        if actual != expected:
-            problems.append(f"「{line.strip()[:24]}」题号应为 Q{expected}，实际 Q{actual}")
+    for i, _, numbered, expected in iter_items(text, spec):
+        if int(numbered.group(1)) != expected:
+            problems.append(
+                f"「{lines[i].strip()[:24]}」编号应为 {expected}，实际 {numbered.group(1)}"
+            )
     return problems
 
 
@@ -99,10 +92,11 @@ def find_mermaid_palette_problems(text: str) -> list[str]:
     return problems
 
 
-def check_document(path: Path, *, qa: bool) -> list[str]:
-    """按文档形态跑该跑的检查。"""
+def check_document(path: Path, spec: TemplateSpec) -> list[str]:
+    """按模版声明的结构跑排版检查。"""
     text = path.read_text(encoding="utf-8")
-    problems = find_blank_line_problems(text) + find_mermaid_palette_problems(text)
-    if qa:
-        problems += find_qa_numbering_problems(text)
-    return problems
+    return (
+        find_blank_line_problems(text, frozenset(spec.part_headings))
+        + find_mermaid_palette_problems(text)
+        + find_numbering_problems(text, spec)
+    )

@@ -14,7 +14,8 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
 - [bili-keyframes](bili-keyframes/SKILL.md)：静默后台浏览器跳转截图、画面去重与补采样提示；
 - [bili-knowledge-tree](bili-knowledge-tree/SKILL.md)：读画面保留清单和文字材料立出知识树，
   把每一张画面分派到它对应的知识点，产出 `notes.plan.json`；
-- [bili-document-builder](bili-document-builder/SKILL.md)：编排知识博客文章、八股模拟面试与学习笔记PPT 的分页转写；
+- [bili-document-builder](bili-document-builder/SKILL.md)：按 Markdown 模版（内置知识博客文章、八股模拟面试，可扩展）
+  产出文档，并编排学习笔记PPT 的分页转写；
 - [bili-pptx](bili-pptx/SKILL.md)：读 PPT 模版原件取设计语言，以真实画面为主体按内容构图，
   做成带完整动画的 PPTX，并做校验与视觉自检。
 
@@ -29,9 +30,11 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
   不打断用户；
 - [scripts/cdp_eval.mjs](scripts/cdp_eval.mjs)：把一段 JS 送到页面里执行并取回结果；
 - [scripts/mermaid_lint.py](scripts/mermaid_lint.py)：mermaid 块的语法与收尾检查；
+- [scripts/md_template_spec.py](scripts/md_template_spec.py)：读 Markdown 模版描述文件 frontmatter 里的结构规则，
+  排版规范化与校验都只认它读出的规则，不写死任何一种文档形态；
 - [scripts/normalize_md.py](scripts/normalize_md.py)：交付物 Markdown 的排版规范化——
-  章节之间 3 个空行、问答题内分段标题前 1 个、标题紧贴正文，问答题号按分类独立编号，
-  合并阶段调用；
+  章节之间 3 个空行、条目内分段标题前 1 个、标题紧贴正文，条目编号按分类独立编号，
+  合并阶段按所选模版调用；
 - [scripts/layout_rules.py](scripts/layout_rules.py)：上面两条约定加 mermaid 配色的**交付前检查**，
   三份交付物的校验脚本都调它——约定光写在模板里不算固定，能拦住才算；
 - [scripts/retint_mermaid.py](scripts/retint_mermaid.py)：换主题时把 mermaid 配色刷成当前主题，
@@ -74,6 +77,9 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
 > 三份可以全要（默认），也可以只要其中几份。它们共用同一棵知识树，口径一致。
 
 用户指定了并行批数就记下来，没指定按默认 5 批执行，不必为这个数字单独发问。
+Markdown 交付物按模版选用：知识博客文章、八股模拟面试是两个内置模版，
+用户放进 `bili-document-builder/references/templates/` 的新模版同样可以按名字点选，
+问「要哪几份」时把当前可用的模版都列出来（`validate_document_output.py --list`）。
 要学习笔记PPT 时，用户开头指定了 PPT 模版（`bili-pptx/references/` 下的模版名）就用它，
 没指定用默认的 `Cryo_Academic`，同样不单独发问。
 
@@ -108,7 +114,7 @@ description: 调度视频学习资料流程：字幕/音频 ASR、静默后台�
 
 ### 阶段 4：三份交付物
 
-把 `style`（要哪几份）、并行批数（默认 5）、PPT 模版名（默认 `Cryo_Academic`）、知识树路径、
+把要哪几份（Markdown 模版名列表 + 是否要 PPT）、并行批数（默认 5）、PPT 模版名（默认 `Cryo_Academic`）、知识树路径、
 画面保留清单、输出目录和已知缺失项交给 `bili-document-builder`。
 它编排知识博客文章、八股模拟面试和学习笔记PPT 的分页转写，
 PPT 的建页、动画注入和渲染自检由 `bili-pptx` 完成。
